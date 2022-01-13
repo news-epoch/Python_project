@@ -11,6 +11,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 import os.path
+import logging
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -168,7 +169,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOG_DIR = os.path.dirname(BASE_DIR)
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,  # 是否禁用已经存在的日志
+    'disable_existing_loggers': False,  # 是否禁用已经存在的日志器
     'formatters': {
         'simple': {
             'format': '[%(asctime)s] %(levelname)s %(message)s',
@@ -179,51 +180,31 @@ LOGGING = {
     },
     'filters': {  # 对日志进行过滤
         'require_debug_true': {  # django在debug模式下才输出日志
-            "()": "django.utils.log.RequireDebugTrue",
+            '()': 'django.utils.log.RequireDebugTrue',
         }
     },
-    # 'formatters': {  # 定义了两种日志显示格式
-    #     'verbose': {  # 标准
-    #         'format': '%(levelname)s %(asctime)s %(module)s '
-    #                   '%(process)d %(thread)d %(message)s'
-    #     },
-    #     'simple': {  # 简单
-    #         'format': '[%(levelname)s][%(asctime)s][%(filename)s:%(lineno)d]%(message)s'
-    #     },
-    # },
     'handlers': {  # 定义了日志处理方式
         'file': {  # Info级别以上保存到日志文件
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',  # 保存到文件，根据文件大小自动切
             'filename': os.path.join(LOG_DIR, 'logs/info.log'),  # 日志文件
-            'maxBytes': 1024 * 1024 * 10,  # 日志大小 10M
-            'backupCount': 2,  # 备份数为 2
-            'formatters': 'verbose',  # 简单格式
+            'maxBytes': 1024 * 1024 * 20,  # 日志大小 20M
+            'backupCount': 5,  # 备份数为 2
+            'formatter': 'verbose',  # 简单格式
             'encoding': 'utf-8',
         },
         'console': {  # 打印到终端console
             'level': "INFO",
             'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
-            'formatters': 'simple',
+            'formatter': 'simple',
         },
     },
-    # "root": {"level": "INFO", "handlers": ["console"]},
     'loggers': {
-        'django': {
+        'django': {   # 定义一个名为django的日志器
             'handlers': ['console', 'file'],
-            'propagate': True,  # 是否建立日志信息
+            'propagate': True,  # 是否继续传递日志信息
             'level': 'INFO',  # 日志授权的最低日志级别
         },
-        # "django.request": { # Django的request发生error会自动记录
-        #     "handlers": ["mail_admins"],
-        #     "level": "ERROR",
-        #     "propagate": True,  # 向不向更高级别的logger传递
-        # },
-        # "django.security.DisallowedHost": { # 对于不在 ALLOWED_HOSTS 中的请求不发送报错邮件
-        #     "level": "ERROR",
-        #     "handlers": ["console", "mail_admins"],
-        #     "propagate": True,
-        # },
     },
 }

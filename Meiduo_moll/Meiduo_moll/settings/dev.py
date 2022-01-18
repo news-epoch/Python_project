@@ -91,6 +91,7 @@ WSGI_APPLICATION = 'Meiduo_moll.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
+AUTH_USER_MODEL = 'user.User'
 
 DATABASES = {
     'default': {

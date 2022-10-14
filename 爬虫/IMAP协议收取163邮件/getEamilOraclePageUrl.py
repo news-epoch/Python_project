@@ -6,8 +6,8 @@ import re
 import time
 def login():
     mail_host = 'imap.163.com'
-    mail_pass = 'YHGQQMQYHCHBMXQD'
-    mail_email = 'newsepoch@163.com'
+    mail_pass = 'xxxx'
+    mail_email = 'xxxx@163.com'
     server = IMAP4_SSL(mail_host, port=993)
     emailDataList = dict()
     imaplib.Commands['ID'] = ('NONAUTH', 'AUTH', 'SELECTED')

@@ -1,8 +1,8 @@
 {
-        'lastName' : 'Weiguo',
-        'firstName': 'Chen',
-        'cardNumber':'4691460027898552',
-        'month':'07',
-        'year':'2030',
-        'cvn':'964'
+        'lastName' : 'xxxx',              #真实的名 例如龙傲天，'lastName':'aotian'
+        'firstName': 'xxxx',              #真实的姓 'firstNmae':'long'
+        'cardNumber':'xxxx',  #信用卡卡号
+        'month':'xxxx',        #信用卡到期月份
+        'year':'xxxx',      #信用卡到期年份
+        'cvn':'xxxx'         #信用卡CVN号
     }

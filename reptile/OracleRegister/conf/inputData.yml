@@ -1,10 +1,44 @@
 {
-        'alternateName' : 'newsepoch',
-        'Password':'Cwg819730159@',
-        'area' :'South Korea North (Chuncheon)',
-        'address':'ming ren feng jing',
-        'city':'Chengdu',
-        'province':'Sichuan',
-        'code':'610043',
-        'phoneNumber':'15760657744'
+        'alternateName' : 'xxxx',   #别名
+        'Password':'xxxx',      #密码
+        'area' :'South Korea North (Chuncheon)',   #区域
+        'address':'xxxx',      # 地址
+        'city':'xxxx',                    #所在城市
+        'province':'xxxx',                 # 所在省份
+        'code':'xxxx',                #所在城市邮编
+        'phoneNumber':'xxxx'     #信用卡预留电话号码
     }
+    
+#United Arab Emirates East (Dubai)
+#UK West (Cardiff)
+#UK South (London)
+#UAE Central (Abu Dhabi)
+#Switzerland North (Zurich)
+#Sweden Central (Stockholm)
+#Spain Central (Madrid)
+#South Africa Central (Johannesburg)
+#Saudi Arabia West (Jeddah)
+#Netherlands Northwest (Amsterdam)
+#Italy Northwest (Milan)
+#Israel 1 (Jerusalem)
+#Germany Central (Frankfurt)
+#France South (Marseille)
+#France Central (Paris)
+#South Korea North (Chuncheon)
+#South Korea Central (Seoul)
+#Singapore (Singapore)
+#Japan East (Tokyo)
+#Japan Central (Osaka)
+#India West (Mumbai)
+#India South (Hyderabad)
+#Australia Southeast (Melbourne)
+#Australia East (Sydney)
+#US West (San Jose)
+#US West (Phoenix)
+#US East (Ashburn)
+#Mexico Central (Queretaro)
+#Canada Southeast (Toronto)
+#Canada Southeast (Montreal)
+#Chile Central (Santiago)
+#Brazil Southeast (Vinhedo)
+#Brazil East (Sao Paulo)

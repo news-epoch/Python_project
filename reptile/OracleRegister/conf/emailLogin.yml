@@ -1,5 +1,5 @@
 {
-  'mail_host' : 'imap.163.com',
-  'mail_pass' : 'YHGQQMQYHCHBMXQD',
-  'mail_email': 'newsepoch@163.com'
+    'mail_host' : 'imap.163.com',
+    'mail_pass' : 'xxxxx',   #授权码
+    'mail_email' : 'xxxx@163.com'   # 邮箱地址
 }

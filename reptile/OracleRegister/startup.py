@@ -18,14 +18,14 @@ if __name__ == '__main__':
     url = getEmailUrl.getNewOracleClode(getEmailUrl.login())
     # 创建对象
     driver = util.createdisguisedriver()
-    with open(util.getLocalFile(BASE_DIR,'conf\stealth.min.js'),'r') as f:
+    with open(os.path.join(BASE_DIR,'conf\stealth.min.js'), 'r') as f:
         js = f.read()
     driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
         "source": js
     })
 
-    inputData = util.getLocalFile(BASE_DIR,'conf\inputData.yml')
-    payData1 = util.getLocalFile(BASE_DIR,'conf\payData.yml')
+    inputData = util.getLocalYmlFile(BASE_DIR, 'conf\inputData.yml')
+    payData1 = util.getLocalYmlFile(BASE_DIR, 'conf\payData.yml')
 
     #前往注册界面
     driver.get(url)

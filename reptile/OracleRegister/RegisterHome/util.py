@@ -10,9 +10,10 @@ def getLocalPath():
 
     return os.path.dirname(os.path.realpath(sys.argv[0]))
 
-def getLocalFile(BASE_DIR,path):
+def getLocalYmlFile(BASE_DIR, path):
     with open(os.path.join(BASE_DIR,path), 'r', encoding='utf-8') as fp:
         a = fp.read()
+
         return yaml.load(a, Loader=yaml.FullLoader)
 
 def createdisguisedriver():

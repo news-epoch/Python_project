@@ -36,7 +36,7 @@ def parse_mail_time(mail_datetime):
 def login():
 
     BASE_DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
-    data = util.getLocalFile(BASE_DIR,'conf\emailLogin.yml')
+    data = util.getLocalYmlFile(BASE_DIR, 'conf\emailLogin.yml')
     mail_host = data['mail_host']
     mail_pass = data['mail_pass']
     mail_email = data['mail_email']

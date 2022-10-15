@@ -25,7 +25,7 @@ class checkHcaptcha(object):
         chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
         driver = webdriver.Chrome(options=chrome_options)
         driver = util.createDiscloseDriver()
-        with open('../stealth.min.js', 'r') as f:
+        with open('../conf/stealth.min.js', 'r') as f:
             js = f.read()
         # driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {'source': js})
         sleep(5)

@@ -17,7 +17,7 @@ if __name__ == '__main__':
     sleep(10)
     url = getEmailUrl.getNewOracleClode(getEmailUrl.login())
     # 创建对象
-    driver = util.createdisguisedriver()
+    driver = util.createDiscloseDriver()
     with open(os.path.join(BASE_DIR,'conf\stealth.min.js'), 'r') as f:
         js = f.read()
     driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
@@ -30,7 +30,7 @@ if __name__ == '__main__':
     #前往注册界面
     driver.get(url)
     # 填写第一页
-    sleep(30)
+    sleep(20)
     print("-----------------开始填写第一页基础数据-----------------")
     page1(driver=driver, data=inputData)
     sleep(20)

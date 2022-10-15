@@ -46,13 +46,13 @@ def page1(driver,data):
     print("检测页面加载按钮是否正常中...")
     for  i in range(0,4):
         sleep(10)
-        test = is_element_exist(driver=driver,element="//button[text()='继续']/@disabled")
+        test = is_element_exist(driver=driver,element="//div[@class='termsComponent']/button[@class='solid']/@disabled")
         if test:
             print("网络不好导致，页面不正常，正在等待加载，等待30s，自动关闭程序")
         else:
             break
     print("点击下一页")
-    button_driver = driver.find_element(By.XPATH, "//button[text()='继续']")
+    button_driver = driver.find_element(By.XPATH, "//div[@class='termsComponent']/button[@class='solid']")
     button_driver.click()
 
 def page2(driver,data):
@@ -90,20 +90,21 @@ def page2(driver,data):
     sleep(5)
     print("检查按钮是否正常")
     while True:
-        test = is_element_exist(driver=driver, element="//button[text()='继续']")
+        test = is_element_exist(driver=driver, element="//form[@autocomplete='off']/button[@class='solid']/@disabled")
         if test:
-            break
-        else:
             sleep(10)
             print("网络不好，等待10s")
+
+        else:
+            break
     # 点击继续
-    button_driver = driver.find_element(By.XPATH, "//button[text()='继续']")
+    button_driver = driver.find_element(By.XPATH, "//form[@autocomplete='off']/button[@class='solid']")
     button_driver.click()
 
 def page3(driver,paydata):
     payData0 = paydata
     print("开始加载添加银行卡界面")
-    button_driver = driver.find_element(By.XPATH, "//button[text()='添加付款验证方式']")
+    button_driver = driver.find_element(By.XPATH, "//div[@class='accordionSection']/div/button[@class='solid']")
     button_driver.click()
 #//div[@class='accordionSection']/div[@class='accordionSectionHeader']/div[@class='accordionArrow']/div[1]
     sleep(5)
@@ -122,9 +123,9 @@ def page3(driver,paydata):
                 returntwoPage.click()
                 print("等待2s，重回下一页")
                 sleep(2)
-                reclassbutton_driver = driver.find_element(By.XPATH, "//button[text()='继续']")
+                reclassbutton_driver = driver.find_element(By.XPATH, "//form[@autocomplete='off']/button[@class='solid']")
                 reclassbutton_driver.click()
-                button_driver = driver.find_element(By.XPATH, "//button[text()='添加付款验证方式']")
+                button_driver = driver.find_element(By.XPATH, "//div[@class='accordionSection']/div/button[@class='solid']")
                 button_driver.click()
                 print("再次加载添加银行卡界面中，等待10s，若不存在，则关闭重新注册")
 
@@ -146,9 +147,9 @@ def page3(driver,paydata):
                 returntwoPage.click()
                 print("等待2s，重回下一页")
                 sleep(2)
-                reclassbutton_driver = driver.find_element(By.XPATH, "//button[text()='继续']")
+                reclassbutton_driver = driver.find_element(By.XPATH, "//form[@autocomplete='off']/button[@class='solid']")
                 reclassbutton_driver.click()
-                button_driver = driver.find_element(By.XPATH, "//button[text()='添加付款验证方式']")
+                button_driver = driver.find_element(By.XPATH, "//div[@class='accordionSection']/div/button[@class='solid']")
                 button_driver.click()
                 print("再次加载添加银行卡界面中，等待10s，若不存在，则关闭重新注册")
                 sleep(20)
@@ -237,7 +238,7 @@ def page3(driver,paydata):
 
     sleep(10)
     # 开始试用
-    start_driver = driver.find_element(By.XPATH, "//button[text()='开始我的免费试用']")
+    start_driver = driver.find_element(By.XPATH, "//button[@id='startMyTrialBtn']")
     start_driver.click()
 
     for i in range(1,5):
@@ -249,7 +250,7 @@ def page3(driver,paydata):
     end_driver = driver.find_element(By.XPATH,"//div[@class='notifierContainer']//h4")
     print("返回注册结果中")
     for i in range(1,10):
-        if end_driver.text =='处理交易时出错':
+        if end_driver.text =='处理交易时出错' or end_driver.text == 'Error processing transaction':
             print(end_driver.text)
             print("注册失败")
             break

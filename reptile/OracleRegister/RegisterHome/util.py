@@ -17,20 +17,26 @@ def getLocalYmlFile(BASE_DIR, path):
         return yaml.load(a, Loader=yaml.FullLoader)
 
 def createdisguisedriver():
-    chrome_options = Options()
+    chrome_options = webdriver.ChromeOptions()
+    # chrome_options = Options()
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-gpu')
     # 开启忽略浏览器证书报错
-    chrome_options.add_argument('-ignore-certificate-errors')
-    chrome_options.add_argument('-ignore -ssl-errors')
+    chrome_options.add_argument('--ignore-certificate-errors-spki-list')
+    chrome_options.add_argument('--ignore-ssl-errors')
+    chrome_options.add_argument('--ignore-ssl-error')
+    chrome_options.add_argument('log-level=2')
     s = Service(executable_path=ChromeDriverManager().install())
     return webdriver.Chrome(service=s, options=chrome_options)
 def createDiscloseDriver():
-    chrome_options = Options()
+    chrome_options = webdriver.ChromeOptions()
+    # chrome_options = Options()
     chrome_options.add_experimental_option('useAutomationExtension', False)
     # 开启忽略浏览器证书报错
-    chrome_options.add_argument('-ignore-certificate-errors')
-    chrome_options.add_argument('-ignore -ssl-errors')
+    chrome_options.add_argument('--ignore-certificate-errors-spki-list')
+    chrome_options.add_argument('--ignore-ssl-errors')
+    chrome_options.add_argument('--ignore-ssl-error')
+    chrome_options.add_argument('log-level=2')
     chrome_options.add_experimental_option('excludeSwitches', ['enable-automation', 'enable-logging'])
     s = Service(executable_path=ChromeDriverManager().install())
     return webdriver.Chrome(service=s, options=chrome_options)

@@ -27,7 +27,7 @@ class checkHcaptcha(object):
         driver = util.createDiscloseDriver()
         with open('../conf/stealth.min.js', 'r') as f:
             js = f.read()
-        # driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {'source': js})
+        driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {'source': js})
         sleep(5)
         driver.get(self.url)
 

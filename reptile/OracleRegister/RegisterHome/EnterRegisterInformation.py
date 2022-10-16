@@ -195,6 +195,7 @@ def page3(driver,paydata):
     card_cvn_driver.send_keys(payData0['cvn'])
 
     ### 选择卡类型
+    sleep(2)
     addPayDiv_driver = driver.find_element(By.XPATH, "//input[@id='card_type_001']")
     addPayDiv_driver.click()
 

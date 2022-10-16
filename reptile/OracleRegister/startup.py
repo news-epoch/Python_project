@@ -17,7 +17,7 @@ if __name__ == '__main__':
     sleep(10)
     url = getEmailUrl.getNewOracleClode(getEmailUrl.login())
     # 创建对象
-    driver = util.createDiscloseDriver()
+    driver = util.createdisguisedriver()
     with open(os.path.join(BASE_DIR,'conf\stealth.min.js'), 'r') as f:
         js = f.read()
     driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {

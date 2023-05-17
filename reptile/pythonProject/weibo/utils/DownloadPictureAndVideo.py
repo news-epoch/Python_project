@@ -3,8 +3,6 @@ from openpyxl import load_workbook
 import requests
 import os
 
-
-
 def DownloadPicture():
     # 读取excel
     workbook = load_workbook(filename="./微博评论02.xlsx")

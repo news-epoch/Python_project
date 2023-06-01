@@ -4,12 +4,15 @@ import requests
 import os
 import sys
 import tkinter
+import re
+#filename:文件名
 def DownloadPicture(filename):
 
-    # 读取excel
-    BASE_DIR = os.path.realpath(sys.argv[0])+'\..'
 
+    ## 获取文件路径
+    BASE_DIR = os.path.realpath(sys.argv[0])+'\..'
     filenamepath = os.path.join(BASE_DIR, filename)
+    ## 读取excel
     workbook = load_workbook(filenamepath)
     sheet = workbook.active
     values = sheet.values
@@ -18,55 +21,34 @@ def DownloadPicture(filename):
     nmp = df.to_numpy()
     ## 将表头删除
     nmp[0] = 'null'
+    index = 1
     for i in  nmp:
         ## 跳过表头数据
         if i[0] == 'null':
             continue
 
-        ## 处理数据
-        temp = str(i[1]).replace('https://weibo.com/', '')
-        temp = temp.replace('/','_')
-        temp = temp + '_' + str(i[3])+'_'+str(i[4])
-        # 图片
-        pictureUrlList = str(i[5]).replace('_x000d_\n','').split(';')
-        pictureFolder = CreateDir(i[0]+'/'+temp+'/'+'图片')
-        # 视频
-        try:
-            videoUrlList = str(i[6]).split(';')
-        except:
-            print("无视频")
-        videoFolder = CreateDir(i[0] + '/' + temp + '/' + '视频')
-        ## 循环下载图片并且重命名
-        Download(pictureFolder,temp,pictureUrlList,'jpg')
-        # pictureIndex = 0
-        # for i in pictureUrlList:
-        #     if i == '':
-        #         continue
-        #     headers = {
-        #         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36',
-        #         'Referer': 'https://weibo.com/'
-        #     }
-        #     r = requests.get(i, headers=headers)
-        #     filename = str(pictureFolder)+'/'+temp+'_'+str(pictureIndex)+'.jpg'
-        #     with open(filename,'wb') as fp:
-        #         fp.write(r.content)
-        #     pictureIndex +=1
+        ## 处理数据  输出字段前10位
+        temp = re.findall('[\u4e00-\u9fa5]', str(i[4]))
+        temp = ''.join(temp)
+        if temp.__len__() <= 10:
+            pass
+        else:
+            temp = temp[0:10]
 
-        ## 循环下载视频并且重命名
-        Download(videoFolder, temp, videoUrlList, 'mp4')
-        # videoIndex = 0
-        # for i in videoUrlList:
-        #     if i == '' or i == 'None':
-        #         continue
-        #     headers = {
-        #         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36',
-        #         'Referer': 'https://weibo.com/'
-        #     }
-        #     r = requests.get(i, headers=headers)
-        #     filename = str(videoFolder) + '/' + temp + '_' + str(videoIndex) + '.mp4'
-        #     with open(filename, 'wb') as fp:
-        #         fp.write(r.content)
-        #     videoIndex += 1
+        # 图片
+        pictureUrlList = str(i[3]).split(';')
+        if pictureUrlList[0] != '':
+            print(pictureUrlList)
+            pictureFolder = CreateDir(temp+'/'+'评论图片'+str(index))
+
+            # 下载图片
+            Download(pictureFolder, temp, pictureUrlList, 'jpg')
+        index += 1
+
+
+#Folder:文件夹路径
+#username: 文件名
+#Urllist：请求地址列表
 
 def Download(Folder, username, UrlList,format):
     Index = 0
@@ -75,7 +57,7 @@ def Download(Folder, username, UrlList,format):
             continue
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36',
-            'Referer': 'https://weibo.com/'
+
         }
         r = requests.get(i, headers=headers)
         filename = str(Folder) + '/' + username + '_' + str(Index) + '.' + format
@@ -85,7 +67,6 @@ def Download(Folder, username, UrlList,format):
 
 def CreateDir(path):
     folder = os.path.realpath(sys.argv[0]) + '\..\\' + path
-    print(folder)
     if not os.path.exists(folder):  # 判断是否存在文件夹如果不存在则创建为文件夹
         os.makedirs(folder)  # makedirs 创建文件时如果路径不存在会创建这个路径
         print
@@ -98,7 +79,6 @@ def CreateDir(path):
         print
         "---  There is this folder!  ---"
         return folder
-
 
 def find_up_box():
     """

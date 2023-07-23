@@ -93,6 +93,7 @@ class carryTiktok:
         url = set()
         for j in range(0, 20):
             # 获取直播推荐列表
+            live_lists_xpath = "//div[@data-e2e='live-recommended-list']/div[1]/div"
             live_lists_elements = self.chromebro.find_elements(By.XPATH,
                                                                "//div[@data-e2e='live-recommended-list']/div[1]/div")
 

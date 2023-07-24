@@ -10,6 +10,9 @@ import pickle
 import pandas as pd
 import os, sys
 
+import openpyxl
+
+
 class carryTiktok:
     def __init__(self):
         self.BASE_DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
@@ -23,9 +26,9 @@ class carryTiktok:
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('useAutomationExtension', False)
 
-
-        self.chromebro = webdriver.Chrome(service=Service(executable_path=os.path.join(self.BASE_DIR, 'utils\chromedriver.exe')),
-                                          options=chrome_options)  # 创建网页对象
+        self.chromebro = webdriver.Chrome(
+            service=Service(executable_path=os.path.join(self.BASE_DIR, 'utils\chromedriver.exe')),
+            options=chrome_options)  # 创建网页对象
 
         self.action = ActionChains(self.chromebro)  # 创建鼠标事件
 
@@ -48,9 +51,9 @@ class carryTiktok:
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('useAutomationExtension', False)
 
-
-        self.chromebro = webdriver.Chrome(service=Service(executable_path=os.path.join(self.BASE_DIR, 'utils\chromedriver.exe')),
-                                          options=chrome_options)  # 创建网页对象
+        self.chromebro = webdriver.Chrome(
+            service=Service(executable_path=os.path.join(self.BASE_DIR, 'utils\chromedriver.exe')),
+            options=chrome_options)  # 创建网页对象
 
         self.action = ActionChains(self.chromebro)  # 创建鼠标事件
 
@@ -66,7 +69,6 @@ class carryTiktok:
 
         # 存放用户+链接列表
         self.data = []
-
 
     # 单个执行登录tiktok
     def login(self):
@@ -85,7 +87,6 @@ class carryTiktok:
         except:
             print("没有找到使用二维码")
 
-
         tiktokCookie = self.chromebro.get_cookies()
         # 保存cookie文件，下次登录使用
         with open("tiktok_cookie.pkl", "wb") as fp:
@@ -99,7 +100,6 @@ class carryTiktok:
                 self.chromebro.quit()
             except:
                 sleep(1)
-
 
     # 获取数据
     def getData(self, reviewer_max_num, reviewer_min_num):
@@ -119,7 +119,6 @@ class carryTiktok:
         sleep(1)
         # 前往直播数据登录
         self.chromebro.get("https://www.tiktok.com/@difuzhubao/live")
-
 
         # 判断是否存在直播视频推荐
         flag = True
@@ -148,12 +147,17 @@ class carryTiktok:
             # 存放列表数据
             while True:
                 try:
-                    url = self.chromebro.find_element(By.XPATH, (live_lists_xpath + live_list_url_xpath)).get_attribute('href').replace('/live', '')
-                    personNum = self.chromebro.find_element(By.XPATH, (live_lists_xpath+live_list_personNum_xpath)).text.replace("名观众", "")
+                    url = self.chromebro.find_element(By.XPATH, (live_lists_xpath + live_list_url_xpath)).get_attribute(
+                        'href').replace('/live', '')
+                    personNum = self.chromebro.find_element(By.XPATH, (
+                                live_lists_xpath + live_list_personNum_xpath)).text.replace("名观众", "")
                     # 模拟鼠标向下滚动
-                    self.action.move_to_element_with_offset(self.chromebro.find_element(By.XPATH, (live_lists_xpath + live_list_move_xpath)), 0, -10).perform()
+                    self.action.move_to_element_with_offset(
+                        self.chromebro.find_element(By.XPATH, (live_lists_xpath + live_list_move_xpath)), 0,
+                        -10).perform()
                     self.action.send_keys(Keys.PAGE_DOWN).perform()
-                    self.chromebro.set_window_size(self.chromebro.get_window_size()['width']+10,self.chromebro.get_window_size()['height']+10)
+                    self.chromebro.set_window_size(self.chromebro.get_window_size()['width'] + 10,
+                                                   self.chromebro.get_window_size()['height'] + 10)
                     break
                 except:
                     print("没有找到url")
@@ -161,7 +165,8 @@ class carryTiktok:
                     continue
 
             personNum = self.copeData(personNum)
-            self.chromebro.set_window_size(self.chromebro.get_window_size()['width'] - 10, self.chromebro.get_window_size()['height'] - 10)
+            self.chromebro.set_window_size(self.chromebro.get_window_size()['width'] - 10,
+                                           self.chromebro.get_window_size()['height'] - 10)
             url_personNum.append([url, personNum])  # 存放列表数据
             # if j % 6 != 0:
             #     sleep(10)
@@ -197,20 +202,22 @@ class carryTiktok:
         # 等待5s
         sleep(5)
         anchorId = self.chromebro.find_element(By.XPATH, "//h1[@data-e2e='user-title']").text  # 用户名id
-        following = self.chromebro.find_element(By.XPATH, "//span[text()='已关注' and @data-e2e='following']/preceding-sibling::strong[@title='已关注']").text
+        following = self.chromebro.find_element(By.XPATH,
+                                                "//span[text()='已关注' and @data-e2e='following']/preceding-sibling::strong[@title='已关注']").text
         following = self.copeData(following)
 
-        fans = self.chromebro.find_element(By.XPATH, "//span[text()='粉丝' and @data-e2e='followers']/preceding-sibling::strong[@title='粉丝']").text
+        fans = self.chromebro.find_element(By.XPATH,
+                                           "//span[text()='粉丝' and @data-e2e='followers']/preceding-sibling::strong[@title='粉丝']").text
         fans = self.copeData(fans)
 
-        likes = self.chromebro.find_element(By.XPATH, "//span[text()='赞' and @data-e2e='likes']/preceding-sibling::strong[@title='赞']").text
-        likes =self.copeData(likes)
+        likes = self.chromebro.find_element(By.XPATH,
+                                            "//span[text()='赞' and @data-e2e='likes']/preceding-sibling::strong[@title='赞']").text
+        likes = self.copeData(likes)
 
         # 关闭当前页面
         print({'anchorId': anchorId, 'following': following, 'fans': fans, 'likes': likes, 'personNum': url[1]})
         self.chromebro.close()  # 关闭标签页2
         self.chromebro.switch_to.window(self.chromebro.window_handles[0])  # 切换到标签页1
-
 
         if self.reviewer_max_num >= int(fans) >= self.reviewer_min_num:
             return {'anchorId': anchorId, 'following': following, 'fans': fans, 'likes': likes, 'personNum': url[1]}
@@ -231,7 +238,15 @@ class carryTiktok:
             return float(temp)
 
     def export_excel(self):
-        df = pd.DataFrame(data=self.data)
+
+        filePath = os.path.join(self.BASE_DIR, 'data.pickle')
+        data = pickle.load(open(filePath, "rb"))
+        data1 = []
+        for i in data:
+            if isinstance(i, dict):
+                data1.append(i)
+
+        df = pd.DataFrame(data=data1)
         filePath = os.path.join(self.BASE_DIR, 'TikTok数据文件.xlsx')
-        df.to_excel(filePath)
+        df.to_excel(filePath, index=False)
 

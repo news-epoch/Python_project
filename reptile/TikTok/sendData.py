@@ -100,9 +100,10 @@ class sendData:
 
     def sendData(self):
         filePath = os.path.join(self.BASE_DIR, 'data.pickle')
-        data = pickle.load(open(filePath, "rb"))
-
-        print(type(data))
+        data = []
+        for i in pickle.load(open(filePath, "rb")):
+            if isinstance(i, dict):
+                data.append(i)
 
         header = {
             'token': self.token,

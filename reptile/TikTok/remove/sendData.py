@@ -25,7 +25,7 @@ class sendData:
         test = picture_get.json()
         picture = base64.b64decode(test['img'])
 
-        with open("../temp.gif", 'wb') as fp:
+        with open("../utils/temp.gif", 'wb') as fp:
             fp.write(picture)
 
         print(picture)
@@ -77,7 +77,7 @@ class sendData:
         Entry_text = tkinter.Entry(root, textvariable=code)
         Entry_text.grid(row=2, column=1,ipady=10)
         # 获取图片
-        img = Image.open("../temp.gif")
+        img = Image.open("../utils/temp.gif")
         img = ImageTk.PhotoImage(img)
         label_img = tkinter.Label(root, image=img).grid(row=2, column=3, columnspan=3)
 
@@ -99,7 +99,7 @@ class sendData:
         root.mainloop()  # 加上这一句，就可以看见窗口了
 
     def sendData(self):
-        filePath = os.path.join(self.BASE_DIR, '../data.pickle')
+        filePath = os.path.join(self.BASE_DIR, '../utils/data.pickle')
         data = []
         for i in pickle.load(open(filePath, "rb")):
             if isinstance(i, dict):

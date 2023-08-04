@@ -92,7 +92,7 @@ class carryTiktok:
 
         tiktokCookie = self.chromebro.get_cookies()
         # 保存cookie文件，下次登录使用
-        with open("tiktok_cookie.pkl", "wb") as fp:
+        with open("utils/tiktok_cookie.pkl", "wb") as fp:
             pickle.dump(tiktokCookie, fp)
 
         print("等待360s")
@@ -102,7 +102,7 @@ class carryTiktok:
                 self.chromebro.find_element(By.XPATH, "//div[@aria-label='打开设置菜单']")
                 tiktokCookie = self.chromebro.get_cookies()
                 # 保存cookie文件，下次登录使用
-                with open("tiktok_cookie.pkl", "wb") as fp:
+                with open("utils/tiktok_cookie.pkl", "wb") as fp:
                     pickle.dump(tiktokCookie, fp)
                 sleep(5)
                 self.chromebro.quit()
@@ -124,7 +124,7 @@ class carryTiktok:
 
         self.chromebro.get("https://www.tiktok.com/@difuzhubao/live")
 
-        filePath = os.path.join(self.BASE_DIR, 'tiktok_cookie.pkl')
+        filePath = os.path.join(self.BASE_DIR, 'utils/tiktok_cookie.pkl')
         cookies = pickle.load(open(filePath, "rb"))
         for cookie in cookies:
             if isinstance(cookie.get('expiry'), float):
@@ -258,7 +258,7 @@ class carryTiktok:
 
     def export_excel(self):
 
-        filePath = os.path.join(self.BASE_DIR, 'data.pickle')
+        filePath = os.path.join(self.BASE_DIR, 'utils/data.pickle')
         if os.path.exists(filePath):
             pass
         else:
@@ -271,7 +271,7 @@ class carryTiktok:
                 data1.append(i)
 
         df = pd.DataFrame(data=data1)
-        filePath = os.path.join(self.BASE_DIR, 'TikTok数据文件.xlsx')
+        filePath = os.path.join(self.BASE_DIR, 'utils/TikTok数据文件.xlsx')
         try:
             df.to_excel(filePath, index=False)
             return "导出路径：" + filePath

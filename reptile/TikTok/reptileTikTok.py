@@ -271,7 +271,7 @@ class carryTiktok:
                 data1.append(i)
 
         df = pd.DataFrame(data=data1)
-        filePath = os.path.join(self.BASE_DIR, 'utils/TikTok数据文件.xlsx')
+        filePath = os.path.join(self.BASE_DIR, 'TikTok数据文件.xlsx')
         try:
             df.to_excel(filePath, index=False)
             return "导出路径：" + filePath

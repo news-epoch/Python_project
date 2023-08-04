@@ -1,4 +1,11 @@
-from reptileTikTok import carryTiktok, pop_up_box
+import sys
+from PyQt5.QtWidgets import QApplication
+
+from TikTokui import *
 
 if __name__ == '__main__':
-    pop_up_box().start()
+    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+    app = QApplication(sys.argv)
+    w = MyWindow()
+    w.show()
+    sys.exit(app.exec_())

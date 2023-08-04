@@ -11,7 +11,7 @@ from time import sleep
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QImage, QPixmap, QFont
-import  sys, os
+import sys, os
 
 from PyQt5.QtWidgets import QScrollArea, QVBoxLayout
 
@@ -96,7 +96,6 @@ class Ui_MainWindow(object):
         self.scroll_msg.setWidget(self.label_msg)
         self.scroll_msg.setGeometry(QtCore.QRect(353, 10, 441, 201))
         self.label_msg.setAlignment(Qt.AlignTop)
-        self.label_msg.setObjectName("")
         v_layout = QVBoxLayout()
         v_layout.addWidget(self.scroll_msg)
 

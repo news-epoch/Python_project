@@ -117,12 +117,12 @@ class sendData:
                         'anchorId': i['anchorId'],
                         'area': 'null',
                         'source': 'null',
-                        'personNum': i['personNum'],
-                        'diamond': 'null',
-                        'dayRank': 'null',
-                        'hisRank': 'null',
-                        'risingStar': 'null',
-                        'fans': i['fans']
+                        'personNum': int(i['personNum']),
+                        'diamond': 0,
+                        'dayRank': 0,
+                        'hisRank': 0,
+                        'risingStar': 0,
+                        'fans': int(i['fans'])
                         }
                 requests.post('http://154.91.228.3:6992/system/data', json=data_json, headers=header)
             except (Exception, BaseException) as e:

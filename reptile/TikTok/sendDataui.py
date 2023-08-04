@@ -77,7 +77,7 @@ class Ui_MainWindow(object):
 
         self.label_msg.setObjectName("")
         ## 配置图片加载
-        pix = QPixmap(os.path.join(self.BASE_DIR, 'temp.gif'))
+        pix = QPixmap(os.path.join(self.BASE_DIR, 'utils\\temp.gif'))
         width = pix.width()  ##获取图片宽度
         height = pix.height()  ##获取图片高度
         if width / self.label_msg.width() >= height / self.label_msg.height():  ##比较图片宽度与label宽度之比和图片高度与label高度之比

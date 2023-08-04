@@ -2,7 +2,7 @@ import json
 
 from requests import request
 import requests
-import os
+import os,sys
 # import yaml
 # from selenium.webdriver.common.by import  By
 # from time import sleep
@@ -11,6 +11,8 @@ import os
 #         a = fp.read()
 #         yaml.load(a, loader=yaml.FullLoader)
 
+def getPath():
+    return os.path.dirname(os.path.realpath(sys.argv[0]))
 def gerCookie(response):
     cookie_value = ''
     for key, value in response.cookies.items():
@@ -102,7 +104,9 @@ def request_info():
     regExamCheck = requests.get(proxies=fiddler_proxies, url="https://zk.sceea.cn/RegExam/login/AuthImageServlet", headers=imgheader, verify=False)
 
     ## 保存图片
-    with open("../lib/valcode.png", 'wb') as fp:
+    BasisPath  = getPath()
+    codePng = os.path.join(BasisPath,"utils\\valcode.png")
+    with open("../utils/valcode.png", 'wb') as fp:
         fp.write(regExamCheck.content)
     print("等待10s")
     # 保存cookie
@@ -162,4 +166,6 @@ def request_info():
 
 
 if __name__ == '__main__':
-    request_info()
+    BasisPath = getPath()
+    codePng = os.path.join(BasisPath, "utils\\valcode.png")
+    print(codePng)

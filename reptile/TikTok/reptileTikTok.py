@@ -28,7 +28,7 @@ class carryTiktok:
         chrome_options.add_experimental_option('useAutomationExtension', False)
 
         self.chromebro = webdriver.Chrome(
-            service=Service(executable_path=os.path.join(self.BASE_DIR, 'utils\chromedriver.exe')),
+            service=Service(executable_path=os.path.join(self.BASE_DIR, 'utils\\chromedriver.exe')),
             options=chrome_options)  # 创建网页对象
 
         self.action = ActionChains(self.chromebro)  # 创建鼠标事件
@@ -54,7 +54,7 @@ class carryTiktok:
         chrome_options.add_experimental_option('useAutomationExtension', False)
 
         self.chromebro = webdriver.Chrome(
-            service=Service(executable_path=os.path.join(self.BASE_DIR, 'utils\chromedriver.exe')),
+            service=Service(executable_path=os.path.join(self.BASE_DIR, 'utils\\chromedriver.exe')),
             options=chrome_options)  # 创建网页对象
 
         self.action = ActionChains(self.chromebro)  # 创建鼠标事件
@@ -92,7 +92,8 @@ class carryTiktok:
 
         tiktokCookie = self.chromebro.get_cookies()
         # 保存cookie文件，下次登录使用
-        with open("utils/tiktok_cookie.pkl", "wb") as fp:
+        cookiepath = os.path.join(self.BASE_DIR, "utils\\tiktok_cookie.pkl")
+        with open(cookiepath, "wb") as fp:
             pickle.dump(tiktokCookie, fp)
 
         print("等待360s")
@@ -102,7 +103,7 @@ class carryTiktok:
                 self.chromebro.find_element(By.XPATH, "//div[@aria-label='打开设置菜单']")
                 tiktokCookie = self.chromebro.get_cookies()
                 # 保存cookie文件，下次登录使用
-                with open("utils/tiktok_cookie.pkl", "wb") as fp:
+                with open(cookiepath, "wb") as fp:
                     pickle.dump(tiktokCookie, fp)
                 sleep(5)
                 self.chromebro.quit()
@@ -124,7 +125,7 @@ class carryTiktok:
 
         self.chromebro.get("https://www.tiktok.com/@difuzhubao/live")
 
-        filePath = os.path.join(self.BASE_DIR, 'utils/tiktok_cookie.pkl')
+        filePath = os.path.join(self.BASE_DIR, 'utils\\tiktok_cookie.pkl')
         cookies = pickle.load(open(filePath, "rb"))
         for cookie in cookies:
             if isinstance(cookie.get('expiry'), float):
@@ -258,7 +259,7 @@ class carryTiktok:
 
     def export_excel(self):
 
-        filePath = os.path.join(self.BASE_DIR, 'utils/data.pickle')
+        filePath = os.path.join(self.BASE_DIR, 'utils\\data.pickle')
         if os.path.exists(filePath):
             pass
         else:

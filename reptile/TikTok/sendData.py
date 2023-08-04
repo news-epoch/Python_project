@@ -26,7 +26,7 @@ def getPicture():
     picture = base64.b64decode(test['img'])
 
 
-    with open(os.path.join(BASE_DIR,"temp.gif"), 'wb') as fp:
+    with open(os.path.join(BASE_DIR,"utils\\temp.gif"), 'wb') as fp:
         fp.write(picture)
 
     print(picture)
@@ -112,7 +112,7 @@ def sendData(token):
     # 创建基础路径
     BASE_DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
     # 获取数据
-    filePath = os.path.join(BASE_DIR, 'data.pickle')
+    filePath = os.path.join(BASE_DIR, 'utils\\data.pickle')
     data = []
     data_history = list()
     for i in pickle.load(open(filePath, "rb")):

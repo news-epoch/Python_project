@@ -86,6 +86,7 @@ class Ui_MainWindow(object):
             ratio = height / self.label_msg.height()
 
         self.label_msg.setPixmap(pix.scaled(width / ratio, height / ratio))
+
         ## 配置文字字体大小
         ft.setPointSize(14)
         ft.setFamily("SimSun")

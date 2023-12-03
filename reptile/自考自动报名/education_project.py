@@ -23,45 +23,13 @@ class education:
         self.BasePath = os.path.dirname(os.path.realpath(sys.argv[0]))
         urllib3.disable_warnings()
         self.cookies = ""
-        self.cdqxdm = [{"QX_BM": "0123", "QX_MC": "温江区"},
-                       {"QX_BM": "0132", "QX_MC": "新津区"},
-                       {"QX_BM": "0108", "QX_MC": "成华区"},
-                       {"QX_BM": "0112", "QX_MC": "龙泉驿区"},
-                       {"QX_BM": "0121", "QX_MC": "金堂县"},
-                       {"QX_BM": "0104", "QX_MC": "锦江区"},
-                       {"QX_BM": "0183", "QX_MC": "邛崃市"},
-                       {"QX_BM": "0106", "QX_MC": "金牛区"},
-                       {"QX_BM": "0184", "QX_MC": "崇州市"},
-                       {"QX_BM": "0195", "QX_MC": "双流区(信息工程大学)"},
-                       {"QX_BM": "0105", "QX_MC": "青羊区"},
-                       {"QX_BM": "0107", "QX_MC": "武侯区"},
-                       {"QX_BM": "0124", "QX_MC": "郫都区"},
-                       {"QX_BM": "0129", "QX_MC": "大邑县"},
-                       {"QX_BM": "0182", "QX_MC": "彭州市"},
-                       {"QX_BM": "0113", "QX_MC": "青白江区"},
-                       {"QX_BM": "0111", "QX_MC": "天府新区"},
-                       {"QX_BM": "0180", "QX_MC": "简阳市"},
-                       {"QX_BM": "0181", "QX_MC": "都江堰市"},
-                       {"QX_BM": "0122", "QX_MC": "双流区"},
-                       {"QX_BM": "0125", "QX_MC": "新都区"},
-                       {"QX_BM": "0131", "QX_MC": "蒲江县"}]
-        self.zgqxdm = [{"QX_MC": "自流井区", "QX_BM": "0302"},
-                       {"QX_MC": "沿滩区", "QX_BM": "0311"},
-                       {"QX_MC": "大安区", "QX_BM": "0304"},
-                       {"QX_MC": "富顺县", "QX_BM": "0322"},
-                       {"QX_MC": "荣  县", "QX_BM": "0321"},
-                       {"QX_MC": "贡井区", "QX_BM": "0303"}]
-        self.leqxdm = [{"QX_MC": "沙湾区", "REST_A": 149, "REST_B": 37, "REST_C": 130, "REST_D": 0, "QX_BM": "1111"},
-                       {"QX_MC": "金口河区", "REST_A": 34, "REST_B": 19, "REST_C": 32, "REST_D": 18, "QX_BM": "1113"},
-                       {"QX_MC": "沐川县", "REST_A": 255, "REST_B": 245, "REST_C": 258, "REST_D": 242, "QX_BM": "1129"},
-                       {"QX_MC": "市中区", "REST_A": 0, "REST_B": 0, "REST_C": 0, "REST_D": 0, "QX_BM": "1102"},
-                       {"QX_MC": "夹江县", "REST_A": 0, "REST_B": 0, "REST_C": 3, "REST_D": 0, "QX_BM": "1126"},
-                       {"QX_MC": "马边县", "REST_A": 842, "REST_B": 815, "REST_C": 847, "REST_D": 815, "QX_BM": "1133"},
-                       {"QX_MC": "井研县", "REST_A": 13, "REST_B": 0, "REST_C": 22, "REST_D": 0, "QX_BM": "1124"},
-                       {"QX_MC": "峨边县", "REST_A": 71, "REST_B": 47, "REST_C": 64, "REST_D": 49, "QX_BM": "1132"},
-                       {"QX_MC": "五通桥区", "REST_A": 61, "REST_B": 0, "REST_C": 69, "REST_D": 0, "QX_BM": "1112"},
-                       {"QX_MC": "峨眉山市", "REST_A": 27, "REST_B": 0, "REST_C": 49, "REST_D": 0, "QX_BM": "1181"},
-                       {"QX_MC": "犍为县", "REST_A": 384, "REST_B": 338, "REST_C": 401, "REST_D": 322, "QX_BM": "1123"}]
+
+        # 地区市州代码
+        self.qxdm = dict()
+        with open(os.path.join(self.BasePath, "utils\\四川地市州报名列表.json"), 'r', encoding='utf-8') as fp:
+            self.qxdm = json.loads(fp.read())
+
+        # 计算机信息管理科目代码
         self.jsjxxglkmdm = [
             {
                 "KC_BM": "02375",
@@ -128,6 +96,11 @@ class education:
             }
         ]
 
+        # 地市州状态码
+        self.cxdsztdm = dict()
+        with open(os.path.join(self.BasePath, "utils\\四川地市州查询状态码.json"), 'r', encoding='utf-8') as fp:
+            self.cxdsztdm = json.loads(fp.read())
+
         self.getHomeCookie()
         self.getCodePng()
 
@@ -139,6 +112,7 @@ class education:
 
     # 请求主页的cookie
     def getHomeCookie(self):
+
         homeheader = {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
             'Accept-Encoding': 'gzip, deflate, br',
@@ -153,7 +127,6 @@ class education:
             'Sec-Fetch-User': '?1',
             'Upgrade-Insecure-Requests': '1',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36',
-
         }
         homereponse = requests.get(url="https://zk.sceea.cn/", headers=homeheader, verify=False)
 
@@ -162,30 +135,21 @@ class education:
 
         # homereponse.close()
 
+    # 获取验证码
     def getCodePng(self):
         """
         获取验证码图片请求
         :return:
         """
         # 请求头
-        self.imgheader = {
-            "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Accept-Language": "zh-CN,zh;q=0.9",
-            "Connection": "keep-alive",
-            "Host": "zk.sceea.cn",
-            "Referer": "https://zk.sceea.cn/",
-            "sec-ch-ua-mobile": "?0",
-            "sec-ch-ua-platform": "Windows",
-            "Sec-Fetch-Dest": "image",
-            "Sec-Fetch-Mode": "no-cors",
-            "Sec-Fetch-Site": "same-origin",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
-
-        }
-
-        # 添加cookie
-        self.imgheader['Cookie'] = self.homereponse_Cookie
+        self.imgheader = {"Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+                          "Accept-Encoding": "gzip, deflate, br", "Accept-Language": "zh-CN,zh;q=0.9",
+                          "Connection": "keep-alive", "Host": "zk.sceea.cn", "Referer": "https://zk.sceea.cn/",
+                          "sec-ch-ua-mobile": "?0", "sec-ch-ua-platform": "Windows", "Sec-Fetch-Dest": "image",
+                          "Sec-Fetch-Mode": "no-cors", "Sec-Fetch-Site": "same-origin",
+                          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+                          # 添加cookie
+                          'Cookie': self.homereponse_Cookie}
 
         # 请求验证码
 
@@ -198,7 +162,7 @@ class education:
             fp.write(regExamCheck.content)
 
         self.regExamCheck_Cookie = self.getCookie(regExamCheck)
-        print("regExamCheck_Cookie{" + self.regExamCheck_Cookie + "}")
+        print("验证码regExamCheck_Cookie{" + self.regExamCheck_Cookie + "}")
 
         # regExamCheck.close()
 
@@ -214,26 +178,16 @@ class education:
         self.username = username
         code = input("请输入验证码：")
         # 登录请求头
-        loginheader = {
-            'Accept': 'application/json, text/javascript, */*; q=0.01',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Accept-Language': 'zh-CN,zh;q=0.9',
-            'Connection': 'keep-alive',
-            'Content-Length': '44',
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-            'Host': 'zk.sceea.cn',
-            'Origin': 'https://zk.sceea.cn',
-            'Referer': 'https://zk.sceea.cn/RegExam/switchPage?resourceId=view',
-            'sec-ch-ua-mobile': '?0',
-            'sec-ch-ua-platform': "Windows",
-            'Sec-Fetch-Dest': 'empty',
-            'Sec-Fetch-Mode': 'cors',
-            'Sec-Fetch-Site': 'same-origin',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36',
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-
-        loginheader['Cookie'] = self.regExamCheck_Cookie + self.homereponse_Cookie
+        loginheader = {'Accept': 'application/json, text/javascript, */*; q=0.01',
+                       'Accept-Encoding': 'gzip, deflate, br', 'Accept-Language': 'zh-CN,zh;q=0.9',
+                       'Connection': 'keep-alive', 'Content-Length': '44',
+                       'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'Host': 'zk.sceea.cn',
+                       'Origin': 'https://zk.sceea.cn', 'Referer': 'https://zk.sceea.cn/', 'sec-ch-ua-mobile': '?0',
+                       'sec-ch-ua-platform': "Windows", 'Sec-Fetch-Dest': 'empty', "Sec-Fetch-Mode": 'cors',
+                       'Sec-Fetch-Site': 'same-origin',
+                       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36',
+                       'X-Requested-With': 'XMLHttpRequest',
+                       'Cookie': self.regExamCheck_Cookie + self.homereponse_Cookie}
 
         print("loginheader_cookies：{" + loginheader['Cookie'] + "}")
 
@@ -243,10 +197,11 @@ class education:
             'code': code.__str__()
         }
         flag = True
+
         # 重复发送登录请求
         ## 登录请求1
         while flag:
-            loginResponse = requests.post(url="https://zk.sceea.cn/RegExam/elogin?resourceId=login",
+            loginResponse = requests.post(url="https://zk.sceea.cn/RegExam/ks1lm2yt5w0beqomselogin?resourceId=login",
                                           headers=loginheader, data=loginData01, verify=False)
             if loginResponse.text != '7':
                 flag = False
@@ -292,52 +247,54 @@ class education:
 
         # 提交报考科目
 
-    def searchPlace(self):
-        headers = {
-            'Accept': 'application/json, text/javascript, */*; q=0.01',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Accept-Language': 'zh-CN,zh;q=0.9',
-            'Connection': 'keep-alive',
-            'Content-Length': '74',
-            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-            'Cookie': 'JSESSIONID=0672791BFD94E8219872A68C26538992; X-LB=2.69.44db11e9.1f90; JSESSIONID=C74355E1C659DFCC732D284D08E688B7; allan=Z59Z9M72P59M732M72O555325M7B399P592M73P55',
-            'Host': 'zk.sceea.cn',
-            'Origin': 'https://zk.sceea.cn',
-            'Referer': "https://zk.sceea.cn/RegExam/switchPage?resourceId=view&zkz=010818443102",
-            'Sec-Ch-Ua': '"Not/A)Brand";v="99", "Google Chrome";v="115", "Chromium";v="115"',
-            'Sec-Ch-Ua-Mobile': '?0',
-            'Sec-Ch-Ua-Platform': '\"Windows\"',
-            'Sec-Fetch-Dest': 'empty',
-            'Sec-Fetch-Mode': 'cors',
-            'Sec-Fetch-Site': 'same-origin',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-        headers['Cookie'] = self.Cookies
+    def searchPlace(self, ds):
+        """
+        :param ds:地市名首字母缩写:
+        :return:
+        """
+
+        headers = {'Accept': 'application/json, text/javascript, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
+                   'Accept-Language': 'zh-CN,zh;q=0.9', 'Connection': 'keep-alive', 'Content-Length': '74',
+                   'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'zk.sceea.cn',
+                   'Origin': 'https://zk.sceea.cn', 'Referer': "https://zk.sceea.cn/RegExam/switchPage?resourceId=view",
+                   'Sec-Ch-Ua': '"Not/A)Brand";v="99", "Google Chrome";v="115", "Chromium";v="115"',
+                   'Sec-Ch-Ua-Mobile': '?0', 'Sec-Ch-Ua-Platform': '\"Windows\"', 'Sec-Fetch-Dest': 'empty',
+                   'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Site': 'same-origin',
+                   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
+                   'X-Requested-With': 'XMLHttpRequest', 'Cookie': self.Cookies}
+
+        print("headers['Cookie']:" + headers['Cookie'])
+
         data = {
             'bkzt': '',
             'qxbm': '',
-            'sfzh': '51302919980523555x',
-            'dsz': '01',
-            'stuType': '1',
-            'stuScope': '0108',
-            'times': 'D'
+            'sfzh': self.username,
+            'dsz': self.cxdsztdm[ds],
+            'stuType': 1,
+            'stuScope': self.zkzh[0:4],
+            'times': 'B'
         }
+
         response = requests.post("https://zk.sceea.cn/RegExam/switchPage?resourceId=searchPlace", headers=headers,
                                  data=data, verify=False)
         jsonData = response.json()
-        sleep(1)
+        print(jsonData)
+        sleep(3)
         print("考区编码\t考区\t\t第一天上午\t第一天下午\t第二天上午\t第二天下午")
-        for i in jsonData["data"]:
-            print(str(i["QX_BM"]) + "\t" + str(i["QX_MC"]) + "\t\t" + str(i["REST_A"]) + "\t\t" + str(
-                i["REST_B"]) + "\t\t" + str(i["REST_C"]) + "\t\t" + str(i["REST_D"]))
+        try:
+            for i in jsonData["data"]:
+                print(str(i["QX_BM"]) + "\t" + str(i["QX_MC"]) + "\t\t" + str(i["REST_A"]) + "\t\t" + str(
+                    i["REST_B"]) + "\t\t" + str(i["REST_C"]) + "\t\t" + str(i["REST_D"]))
+        except:
+            print(jsonData)
 
-        return jsonData
+        return jsonData["data"]
 
-    def subjectRegExam(self, km, qx):
+    def subjectRegExam(self, km, qx, sz):
         """
         :param km: 科目
         :param qx: 区县
+        :param sz: 市州
         :return:
         """
         subjectheader = {
@@ -362,7 +319,71 @@ class education:
         subjectheader['Cookie'] = self.Cookies
         # print("subjectheader['Cookie']:" + self.Cookies)
 
-        zy_bm, kc_bm, mainIds, qxname, coursejson = "", "", "", "", []
+        zy_bm, kc_bm, mainIds, qxname, coursejson, qxdm = "", "", "", "", [], []
+
+        if str(sz).__contains__("成都"):
+            qxdm = self.qxdm['cd']
+            self.searchPlace('cd')
+        elif str(sz).__contains__("自贡"):
+            qxdm = self.qxdm['zg']
+            self.searchPlace('zg')
+        elif str(sz).__contains__("乐山"):
+            qxdm = self.qxdm['ls']
+            self.searchPlace('ls')
+        elif str(sz).__contains__("攀枝花"):
+            qxdm = self.qxdm['pzh']
+            self.searchPlace('pzh')
+        elif str(sz).__contains__("泸州"):
+            qxdm = self.qxdm['lz']
+            self.searchPlace('lz')
+        elif str(sz).__contains__("德阳"):
+            qxdm = self.qxdm['dy']
+            self.searchPlace('dy')
+        elif str(sz).__contains__("绵阳"):
+            qxdm = self.qxdm['my']
+            self.searchPlace('my')
+        elif str(sz).__contains__("广元"):
+            qxdm = self.qxdm['gy']
+            self.searchPlace('gy')
+        elif str(sz).__contains__("遂宁"):
+            qxdm = self.qxdm['sn']
+            self.searchPlace('sn')
+        elif str(sz).__contains__("内江"):
+            qxdm = self.qxdm['nj']
+            self.searchPlace('nj')
+        elif str(sz).__contains__("南充"):
+            qxdm = self.qxdm['nc']
+            self.searchPlace('nc')
+        elif str(sz).__contains__("宜宾"):
+            qxdm = self.qxdm['yb']
+            self.searchPlace('yb')
+        elif str(sz).__contains__("广安"):
+            qxdm = self.qxdm['ga']
+            self.searchPlace('ga')
+        elif str(sz).__contains__("达州"):
+            qxdm = self.qxdm['dz']
+            self.searchPlace('dz')
+        elif str(sz).__contains__("雅安"):
+            qxdm = self.qxdm['ya']
+            self.searchPlace('ya')
+        elif str(sz).__contains__("阿坝"):
+            qxdm = self.qxdm['abz']
+            self.searchPlace('abz')
+        elif str(sz).__contains__("甘孜"):
+            qxdm = self.qxdm['gz']
+            self.searchPlace('gz')
+        elif str(sz).__contains__("凉山"):
+            qxdm = self.qxdm['lsz']
+            self.searchPlace('lsz')
+        elif str(sz).__contains__("巴中"):
+            qxdm = self.qxdm['bz']
+            self.searchPlace('bz')
+        elif str(sz).__contains__("眉山"):
+            qxdm = self.qxdm['ms']
+            self.searchPlace('ms')
+        elif str(sz).__contains__("资阳"):
+            qxdm = self.qxdm['zy']
+            self.searchPlace('zy')
 
         for j in km:
             for i in self.jsjxxglkmdm:
@@ -371,7 +392,7 @@ class education:
                     coursejson.append(temp)
                     break
 
-        for i in self.cdqxdm:
+        for i in qxdm:
             if i.get("QX_MC").__eq__(qx):
                 mainIds = i.get("QX_BM")
                 qxname = i.get("QX_MC")
@@ -399,8 +420,13 @@ class education:
         sleep(1)
         subjectResponse = requests.post(url='https://zk.sceea.cn/RegExam/switchPage?resourceId=reg',
                                         headers=subjectheader, data=subjectData, verify=False)
-        print(subjectResponse.text + "---->报考失败")
-        return subjectResponse.text
+
+        if str(subjectResponse.text).__contains__("success"):
+            print(str(subjectResponse.text) + "---->报考成功")
+            return str(subjectResponse.text) + "---->报考成功"
+        else:
+            print(str(subjectResponse.text) + "---->报考失败")
+            return str(subjectResponse.text) + "---->报考失败"
 
         # 备用功能通过cookie 打开网页
         # def chrome(self):
@@ -484,152 +510,128 @@ class education:
         #
         #     sleep(720)
 
-    class MyWindow(QWidget):
-        def __init__(self):
-            self.ed = education()
-            super().__init__()
-            self.init_ui()
 
-        def init_ui(self):
-            self.BASE_DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
-            self.ui = uic.loadUi(os.path.join(self.BASE_DIR, "zikao.ui"))
+class MyWindow(QWidget):
+    def __init__(self):
+        self.ed = education()
+        super().__init__()
+        self.init_ui()
 
-            self.usernameLabel = self.ui.usernameLabel
-            self.passwordLabel = self.ui.passwordLabel
-            self.usernameEdit = self.ui.usernameEdit
-            self.passwordEdit = self.ui.passwordEdit
-            self.codeLabel = self.ui.codeLabel
-            self.codeEdit = self.ui.codeEdit
-            self.loginButton = self.ui.loginButton
-            self.messagelabel = self.ui.messagelabel
-            self.countyBox = self.ui.countyBox
-            self.countylabel = self.ui.countylabel
-            self.subjectBox = self.ui.subjectBox
-            self.disciplinelabel = self.ui.disciplinelabel
-            self.disciplineBox = self.ui.disciplineBox
-            self.registrationNoLabel = self.ui.registrationNoLabel
-            self.registrationNoEdit = self.ui.registrationNoEdit
-            self.candidateButton = self.ui.loginButton_2
-            self.flushCodeButton = self.ui.flushCodeButton
+    def init_ui(self):
+        self.BASE_DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
+        self.ui = uic.loadUi(os.path.join(self.BASE_DIR, "zikao.ui"))
 
-            self.design()
+        self.usernameLabel = self.ui.usernameLabel
+        self.passwordLabel = self.ui.passwordLabel
+        self.usernameEdit = self.ui.usernameEdit
+        self.passwordEdit = self.ui.passwordEdit
+        self.codeLabel = self.ui.codeLabel
+        self.codeEdit = self.ui.codeEdit
+        self.loginButton = self.ui.loginButton
+        self.messagelabel = self.ui.messagelabel
+        self.countyBox = self.ui.countyBox
+        self.countylabel = self.ui.countylabel
+        self.subjectBox = self.ui.subjectBox
+        self.disciplinelabel = self.ui.disciplinelabel
+        self.disciplineBox = self.ui.disciplineBox
+        self.registrationNoLabel = self.ui.registrationNoLabel
+        self.registrationNoEdit = self.ui.registrationNoEdit
+        self.candidateButton = self.ui.loginButton_2
+        self.flushCodeButton = self.ui.flushCodeButton
 
-        def design(self):
-            ft = QFont()
-            # 配置下拉框
-            _translate = QtCore.QCoreApplication.translate
-            subjectdata, num = ["操作系统概论",
-                                "计算机网络原理",
-                                "英语(二)",
-                                "管理经济学",
-                                "数据库系统原理",
-                                "信息资源管理",
-                                "运筹学基础"], 0
+        self.design()
 
-            with open(os.path.join(self.BASE_DIR, "utils\\cdqxdm.txt"), "r", encoding="utf-8") as fp:
-                qxdm = json.load(fp)
+    def design(self):
+        ft = QFont()
+        # 配置下拉框
+        _translate = QtCore.QCoreApplication.translate
+        subjectdata, num = ["操作系统概论",
+                            "计算机网络原理",
+                            "英语(二)",
+                            "管理经济学",
+                            "数据库系统原理",
+                            "信息资源管理",
+                            "运筹学基础"], 0
 
-            for i in qxdm:
-                self.countyBox.addItem("")
-                self.countyBox.setItemText(num, _translate("Form", i["QX_MC"]))
-                num += 1
+        with open(os.path.join(self.BASE_DIR, "utils\\cdqxdm.txt"), "r", encoding="utf-8") as fp:
+            qxdm = json.load(fp)
 
-            num = 0
+        for i in qxdm:
+            self.countyBox.addItem("")
+            self.countyBox.setItemText(num, _translate("Form", i["QX_MC"]))
+            num += 1
 
-            for i in subjectdata:
-                self.subjectBox.addItem("")
-                self.subjectBox.setItemText(num, _translate("Form", i))
-                num += 1
+        num = 0
 
-            # 配置消息加载框
-            ## 图片加载
-            pix = QPixmap(os.path.join(self.BASE_DIR, 'utils\\valcode.gif'))
-            width = pix.width()  ##获取图片宽度
-            height = pix.height()  ##获取图片高度
-            if width / self.messagelabel.width() >= height / self.messagelabel.height():  ##比较图片宽度与label宽度之比和图片高度与label高度之比
-                ratio = width / self.messagelabel.width()
-            else:
-                ratio = height / self.messagelabel.height()
+        for i in subjectdata:
+            self.subjectBox.addItem("")
+            self.subjectBox.setItemText(num, _translate("Form", i))
+            num += 1
 
-            self.messagelabel.setPixmap(pix.scaled(int(width / ratio), int(height / ratio)))
+        # 配置消息加载框
+        ## 图片加载
+        pix = QPixmap(os.path.join(self.BASE_DIR, 'utils\\valcode.gif'))
+        width = pix.width()  ##获取图片宽度
+        height = pix.height()  ##获取图片高度
+        if width / self.messagelabel.width() >= height / self.messagelabel.height():  ##比较图片宽度与label宽度之比和图片高度与label高度之比
+            ratio = width / self.messagelabel.width()
+        else:
+            ratio = height / self.messagelabel.height()
 
-            ## 配置消息文字
-            ft.setPointSize(14)
-            ft.setFamily("SimSun")
-            self.messagelabel.setFont(ft)
+        self.messagelabel.setPixmap(pix.scaled(int(width / ratio), int(height / ratio)))
 
-            ## 配置消息滚动
-            # self.scroll_msg = QScrollArea(self.ui.MyWindow)
-            # self.scroll_msg.setWidget(self.messagelabel)
-            # self.scroll_msg.setGeometry(QtCore.QRect(353, 10, 441, 201))
-            # self.messagelabel.setAlignment(Qt.AlignTop)
-            # v_layout = QVBoxLayout()
-            # v_layout.addWidget(self.scroll_msg)
+        ## 配置消息文字
+        ft.setPointSize(14)
+        ft.setFamily("SimSun")
+        self.messagelabel.setFont(ft)
 
-            # 配置触发器绑定
-            import threading
+        ## 配置消息滚动
+        # self.scroll_msg = QScrollArea(self.ui.MyWindow)
+        # self.scroll_msg.setWidget(self.messagelabel)
+        # self.scroll_msg.setGeometry(QtCore.QRect(353, 10, 441, 201))
+        # self.messagelabel.setAlignment(Qt.AlignTop)
+        # v_layout = QVBoxLayout()
+        # v_layout.addWidget(self.scroll_msg)
 
-            self.loginButton.clicked.connect(self.login)
-            self.flushCodeButton.clicked.connect(lambda: self.code())
-            self.candidateButton.clicked.connect(lambda: self.subject())
+        # 配置触发器绑定
+        import threading
 
-        def login(self):
-            try:
-                self.ed.login(username=self.usernameEdit.text(), password=self.passwordEdit.text(),
-                              zkzh=self.registrationNoEdit.text(), code=self.codeEdit.text())
-                self.messagelabel.setText("【" + str(self.usernameEdit.text()) + "】登录成功")
-            except Exception as e:
-                print(e)
-                self.messagelabel.setText("登陆失败")
+        self.loginButton.clicked.connect(self.login)
+        self.flushCodeButton.clicked.connect(lambda: self.code())
+        self.candidateButton.clicked.connect(lambda: self.subject())
 
-        def subject(self):
-            try:
-                self.ed.subjectRegExam(qx=self.countyBox.currentText(), km=self.subjectBox.currentText())
-                self.messagelabel.setText("报考\"" + self.subjectBox.currentText() + "\"成功")
-            except Exception as e:
-                self.messagelabel.setText("报考失败")
+    def login(self):
+        try:
+            self.ed.login(username=self.usernameEdit.text(), password=self.passwordEdit.text(),
+                          zkzh=self.registrationNoEdit.text(), code=self.codeEdit.text())
+            self.messagelabel.setText("【" + str(self.usernameEdit.text()) + "】登录成功")
+        except Exception as e:
+            print(e)
+            self.messagelabel.setText("登陆失败")
 
-        def code(self):
-            try:
-                self.ed.getCodePng()
-            except Exception as e:
-                print(e)
-                self.messagelabel.setText("获取验证码失败。")
-                self.messagelabel.repaint()
+    def subject(self):
+        try:
+            self.ed.subjectRegExam(qx=self.countyBox.currentText(), km=self.subjectBox.currentText())
+            self.messagelabel.setText("报考\"" + self.subjectBox.currentText() + "\"成功")
+        except Exception as e:
+            self.messagelabel.setText("报考失败")
 
-            pix = QPixmap(os.path.join(self.BASE_DIR, 'utils\\valcode.gif'))
-            width = pix.width()  ##获取图片宽度
-            height = pix.height()  ##获取图片高度
-            if width / self.messagelabel.width() >= height / self.messagelabel.height():  ##比较图片宽度与label宽度之比和图片高度与label高度之比
-                ratio = width / self.messagelabel.width()
-            else:
-                ratio = height / self.messagelabel.height()
-
-            self.messagelabel.setPixmap(pix.scaled(int(width / ratio), int(height / ratio)))
-
+    def code(self):
+        try:
+            self.ed.getCodePng()
+        except Exception as e:
+            print(e)
+            self.messagelabel.setText("获取验证码失败。")
             self.messagelabel.repaint()
 
+        pix = QPixmap(os.path.join(self.BASE_DIR, 'utils\\valcode.gif'))
+        width = pix.width()  ##获取图片宽度
+        height = pix.height()  ##获取图片高度
+        if width / self.messagelabel.width() >= height / self.messagelabel.height():  ##比较图片宽度与label宽度之比和图片高度与label高度之比
+            ratio = width / self.messagelabel.width()
+        else:
+            ratio = height / self.messagelabel.height()
 
-if __name__ == '__main__':
-    education01 = education()
-    # education01.getHomeCookie()
-    # education01.getCodePng()
-    education01.login(username="51302919980523555X", password="23555X", zkzh="010818443102")
-    # education01.login(username="510411199904011426", password="011426", zkzh="010818443068")
-    # education01.chrome()
-    while True:
-        json = education01.searchPlace()
-        for i in json["data"]:
-            if i['QX_MC'] == '新都区' and i['REST_D'] != 0:
-                text = education01.subjectRegExam(["计算机网络原理"], "新都区")
-                if text != '5' or text == 'success':
-                    break
-                elif text == '5' or text == 5:
-                    continue
-                break
+        self.messagelabel.setPixmap(pix.scaled(int(width / ratio), int(height / ratio)))
 
-    # QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
-    # App = QApplication(sys.argv)  # 创建QApplication对象，作为GUI主程序入口
-    # stats = MyWindow()
-    # stats.ui.show()  # 显示主窗体
-    # sys.exit(App.exec_())
+        self.messagelabel.repaint()

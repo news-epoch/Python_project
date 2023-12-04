@@ -3,20 +3,19 @@ import threading
 
 from PyQt5 import uic, QtGui
 from PyQt5.QtCore import QThread, Qt, pyqtSignal
+from PyQt5.QtGui import QDoubleValidator
 from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow
 
 from XGboostUI import Ui_Form
 
+
 class predictThread(QThread):
     sinOut = pyqtSignal(str)
-    def __init__(self, featuresOne, featuresTwo, featuresThree, featuresFour, featuresFive, featuresSix):
+
+    def __init__(self):
         super(predictThread, self).__init__()
-        self.featuresOne = featuresOne
-        self.featuresTwo = featuresTwo
-        self.featuresThree = featuresThree
-        self.featuresFour = featuresFour
-        self.featuresFive = featuresFive
-        self.featuresSix = featuresSix
+
+
     def run(self):
         from xgbModel import xgbModel
         xgb = xgbModel()
@@ -29,8 +28,13 @@ class predictThread(QThread):
                           )
         self.sinOut.emit(str(msg))
 
-
-
+    def init(self, featuresOne, featuresTwo, featuresThree, featuresFour, featuresFive, featuresSix):
+        self.featuresOne = featuresOne
+        self.featuresTwo = featuresTwo
+        self.featuresThree = featuresThree
+        self.featuresFour = featuresFour
+        self.featuresFive = featuresFive
+        self.featuresSix = featuresSix
 
 
 class Mywindow(QWidget):
@@ -58,21 +62,17 @@ class Mywindow(QWidget):
         self.message = self.ui.message
 
 
+
         # 获取参数
-        featuresOne = self.featuresOne_edit.text()
-        featuresTwo = self.featuresTwo_edit.text()
-        featuresThree = self.featuresThree_edit.text()
-        featuresFour = self.featuresFour_edit.text()
-        featuresFive = self.featuresFive_edit.text()
-        featuresSix = self.featuresSix_edit.text()
+        # featuresOne = float(self.featuresOne_edit.text().format('\t', '').format('\n', ''))
+        # featuresTwo = float(self.featuresTwo_edit.text().format('\t', '').format('\n', ''))
+        # featuresThree = float(self.featuresThree_edit.text().format('\t', '').format('\n', ''))
+        # featuresFour = float(self.featuresFour_edit.text().format('\t', '').format('\n', ''))
+        # featuresFive = float(self.featuresFive_edit.text().format('\t', '').format('\n', ''))
+        # featuresSix = float(self.featuresSix_edit.text().format('\t', '').format('\n', ''))
 
         # 绑定信号与槽函数
-        self.predict = predictThread(featuresOne=featuresOne,
-                           featuresTwo=featuresTwo,
-                           featuresThree=featuresThree,
-                           featuresFour=featuresFour,
-                           featuresFive=featuresFive,
-                           featuresSix=featuresSix)
+        self.predict = predictThread()
 
         self.predict.sinOut.connect(self.XgbRegressor)
 
@@ -88,7 +88,27 @@ class Mywindow(QWidget):
         self.message.setText(msg)
 
     def XgbStrart(self):
+        # # 获取参数
+        featuresOne = self.featuresOne_edit.text()
+        featuresTwo = self.featuresTwo_edit.text()
+        featuresThree = self.featuresThree_edit.text()
+        featuresFour = self.featuresFour_edit.text()
+        featuresFive = self.featuresFive_edit.text()
+        featuresSix = self.featuresSix_edit.text()
+
+        featuresOne = float(featuresOne)
+
+        print(isinstance(featuresOne, float))
+        self.predict.init(featuresOne=float(featuresOne),
+        featuresTwo=float(featuresTwo),
+        featuresThree=float(featuresThree),
+        featuresFour=float(featuresFour),
+        featuresFive=float(featuresFive),
+        featuresSix=float(featuresSix))
+
         self.predict.start()
+
+
 
 
 if __name__ == '__main__':

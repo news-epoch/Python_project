@@ -182,31 +182,3 @@ if __name__ == '__main__':
     doctor.exportExcel()
 
 
-# 比较两个数的大小     --------------> 这个就是函数
-def test(a, b):
-    if a - b > 0:
-        print(str(a) + " 大")
-    elif (a - b < 0):
-        print(str(b) + " 大")
-    elif (a - b == 0):
-        print(str(a) + "和" + str(b) + "一样大")
-
-
-class listData:
-    # 这个就是方法
-    def listDatatest(self, a, b):
-        if a - b > 0:
-            print(str(a) + " 大")
-        elif (a - b < 0):
-            print(str(b) + " 大")
-        elif (a - b == 0):
-            print(str(a) + "和" + str(b) + "一样大")
-
-
-if __name__ == '__main__':
-    ld = listData()
-    ld.listDatatest(1, 2)
-
-    listData().listDatatest(1, 2)
-
-    test(1, 2)

@@ -1,0 +1,6 @@
+mysql:
+  host: '192.168.1.201'      # IP
+  port: 33061       # 端口
+  user: 'root'         # 用户
+  password: '123456'         # 密码
+  db: 'test'       # 数据库名

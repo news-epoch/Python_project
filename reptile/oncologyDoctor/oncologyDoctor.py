@@ -175,7 +175,7 @@ class doctorInformationScraping:
         print("=============================>已到达数据页面")
 
     def scrapeTheUserNumber(self,pageStart, pageEnd):
-        print("1.开始抓取页数据列表<<==========================")
+        print("1.开始抓取页数据列表<<====================================================")
         # 1. 开始抓取数据
         for page_num in range(pageStart, (pageEnd+1)):  # 页数
             print("==============="+"开始抓取第 {} 页用户数据ID：".format(str(page_num))+"===============")
@@ -197,7 +197,7 @@ class doctorInformationScraping:
 
             print("===============" + "结束抓取第 {} 页用户数据ID：".format(str(page_num)) + "===============")
 
-        print("==========================>>1.结束抓取页数据列表")
+        print("====================================================>>1.结束抓取页数据列表")
 
 
     def scrapeUserInformation(self):
@@ -216,7 +216,7 @@ class doctorInformationScraping:
             for providerDetail in ['Overview', 'Locations']:
                 # 1.2 抓取基础数据
                 if providerDetail == 'Overview':
-                    print("----------------------------------->1. 抓取基础数据")
+                    print("----------------------------------->1. 抓取基础数据开始")
                     # 1.3 点击基础数据列表
                     # self.checkElement("//div[@class='navBar']/ul[1]/li[1]/a[@data-ui-element-name='Overview']").click()
                     time.sleep(4)
@@ -338,11 +338,11 @@ class doctorInformationScraping:
                     except Exception:
                         infoDic['License'] = '无'
 
-                    print("1. 抓取基础数据结束<-----------------------------------")
+                    print("----------------------------------->1. 抓取基础数据结束")
 
                 # 1.4抓取二级数据
                 elif providerDetail == 'Locations':
-                    print("------------------>2. 开始抓取locations数据")
+                    print("----------------------------------->2. 开始抓取locations数据")
                     while True:
                         try:
                             self.chromebro.find_element(By.XPATH, "//div[@class='navBar']/ul[1]/li[3]/a[@data-ui-element-name='Locations']").click()
@@ -376,10 +376,10 @@ class doctorInformationScraping:
                             infoDic['Languagesspoken' + str(singLocation)] = self.chromebro.find_element(By.XPATH, "//tbody[@class='table-body locations']/tr[{}]/td[4]".format(singLocation)).text
                         except:
                             infoDic['Languagesspoken' + str(singLocation)] = '无'
-                    print("2. 抓取locations数据结束<------------------")
+                    print("----------------------------------->2. 抓取locations数据结束")
 
             print("抓取的数据为：{}".format(infoDic))
-            print("=======================0. 结束抓取 {} 的数据=======================".format(infoDic['title']))
+            print("=======================0. 结束抓取 {} 的数据=======================\n\n".format(infoDic['title']))
             self.doctorInfoList.append(infoDic)
 
 

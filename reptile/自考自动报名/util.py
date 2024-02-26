@@ -8,7 +8,7 @@ def image_text(_save_url, yanzhengma_file_name):
     :param yanzhengma_file_name:
     :return:
     """
-#   pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
     image = Image.open(_save_url + yanzhengma_file_name)
     image = binarization(image)  # 二值化处理
     image = cut_noise(image)  # 噪点处理

@@ -4,8 +4,8 @@ from PIL import Image
 
 def image_text(_save_url, yanzhengma_file_name):
     """
-    :param _save_url:
-    :param yanzhengma_file_name:
+    :param _save_url:   保存地址   /a/v/c/d/
+    :param yanzhengma_file_name:   图片名称  cade.png
     :return:
     """
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
@@ -16,7 +16,6 @@ def image_text(_save_url, yanzhengma_file_name):
     text = pytesseract.image_to_string(image, lang='eng')
     try:
         os.remove(_save_url + yanzhengma_file_name)
-        # os.rename(_save_url + yanzhengma_file_name, _save_url + "trainingLibrary/" + yanzhengma_file_name)  # 保存验证码
     except Exception:
         pass
 
@@ -75,3 +74,50 @@ def cut_noise(image):
         image.putpixel(pos, 1)
 
     return image  # 返回修改后的图片
+
+
+def chinaConvetEnglish(character):
+    if str(character).__contains__("成都"):
+        character = 'cd'
+    elif str(character).__contains__("自贡"):
+        character = 'zg'
+    elif str(character).__contains__("乐山"):
+        character = 'ls'
+    elif str(character).__contains__("攀枝花"):
+        character = 'pzh'
+    elif str(character).__contains__("泸州"):
+        character = 'lz'
+    elif str(character).__contains__("德阳"):
+        character = 'dy'
+    elif str(character).__contains__("绵阳"):
+        character = 'my'
+    elif str(character).__contains__("广元"):
+        character = 'gy'
+    elif str(character).__contains__("遂宁"):
+        character = 'sn'
+    elif str(character).__contains__("内江"):
+        character = 'nj'
+    elif str(character).__contains__("南充"):
+        character = 'nc'
+    elif str(character).__contains__("宜宾"):
+        character = 'yb'
+    elif str(character).__contains__("广安"):
+        character = 'ga'
+    elif str(character).__contains__("达州"):
+        character = 'dz'
+    elif str(character).__contains__("雅安"):
+        character = 'ya'
+    elif str(character).__contains__("阿坝"):
+        character = 'abz'
+    elif str(character).__contains__("甘孜"):
+        character = 'gz'
+    elif str(character).__contains__("凉山"):
+        character = 'lcharacter'
+    elif str(character).__contains__("巴中"):
+        character = 'bz'
+    elif str(character).__contains__("眉山"):
+        character = 'ms'
+    elif str(character).__contains__("资阳"):
+        character = 'zy'
+
+    return str(character)

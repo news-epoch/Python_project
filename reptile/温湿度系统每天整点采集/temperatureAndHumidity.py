@@ -70,9 +70,9 @@ class temperatureAndHumidity:
         # 输入验证码 //img[@id='imgValidCode' and @title='点击刷新验证码']
         ## 查询验证码,循环识别验证码，直到识别成功
         while True:
-            captchaImgPath = CopeCaptchaImage.image_cj(driver=self.chromebro, _save_url=(self.BASE_DIR + "/"),
+            captchaImgFileName = CopeCaptchaImage.image_cj(driver=self.chromebro, _save_url=(self.BASE_DIR + "/"),
                                                        yuansu="//img[@id='imgValidCode']")  # 验证码图片
-            CopeCaptchaText = CopeCaptchaImage.image_text((self.BASE_DIR + "/"), captchaImgPath)  # 识别验证码
+            CopeCaptchaText = CopeCaptchaImage.image_text((self.BASE_DIR + "/"), captchaImgFileName)  # 识别验证码
             copeText = CopeCaptchaText[0:5].strip()
             if len(copeText) == 0 or len(copeText) != 4:  # 没有内容，或者 内容不超过4个
                 self.chromebro.find_element(By.XPATH, "//img[@id='imgValidCode' and @title='点击刷新验证码']").click()  # 刷新验证码

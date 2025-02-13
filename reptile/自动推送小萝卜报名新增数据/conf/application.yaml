@@ -1,0 +1,14 @@
+# mysql
+mysql:
+  url: "mysql://root:123456@10.0.9.20:33062/scene_iot"
+
+headers:
+  X-LC-Sign: "674dee286e3de05bd8965db0958e360c,1739344409823"
+  X-LC-Session: "elkwkwh7fo2cydt0d51s46x9p"
+  X-LC-Id: "6IkiQ1QmPKMayoS8DKVi7067-gzGzoHsz"
+
+email:
+  sendEmail: "newsepoch@163.com"
+  sendPass: "MFS33kEx8XwRSuvY"
+  sendHost: "smtp.163.com"
+  acceptEmail: "819730159@qq.com"

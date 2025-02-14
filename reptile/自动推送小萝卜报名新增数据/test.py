@@ -1,11 +1,12 @@
 import json
 from datetime import datetime
 
-from reptile.自动推送小萝卜报名新增数据 import QQEmail
+# from reptile.自动推送小萝卜报名新增数据 import QQEmail
 import schedule
 import time
 
-from reptile.自动推送小萝卜报名新增数据.xiaoluobo import applicationYml, sendEmail
+# from reptile.自动推送小萝卜报名新增数据.xiaoluobo import applicationYml, sendEmail
+from xiaoluobo import sendEmail
 
 
 def job():

@@ -94,7 +94,7 @@ def getXiaoLuoBoData(xLCSign, xLCSession, xLCId):
                     "%Y-%m-%d %H:%M:%S"),  # 任务创建时间
                 "endAt": datetime.datetime.strptime(result['expiredAt']['iso'], '%Y-%m-%dT%H:%M:%S.%fZ').strftime(
                     "%Y-%m-%d %H:%M:%S"),  # 任务结束时间
-                'priceItems': str(result.get('additionalItems'))   # 价格
+                'priceItems': json.dumps(result.get('additionalItems'), ensure_ascii=False)   # 价格
             })
         except Exception:
             print(json.dumps(result, ensure_ascii=False))
@@ -114,7 +114,7 @@ def save(url, headers):
         xiaoluoboInfo = XiaoluoboInfo(id=i['id'], title=i['title'], locationName=i['locationName'],
                                       attendCount=i['attendCount'],
                                       count=i['count'], createdAt=i['createdAt']
-                                      , endAt=i['endAt'], locationAddress=i['locationAddress'], priceItems=json.dumps(i.get('priceItems').replace("\'", "\""), ensure_ascii=False))
+                                      , endAt=i['endAt'], locationAddress=i['locationAddress'], priceItems=i.get('priceItems'))
         # session.query(XiaoluoboInfo).filter(and_(XiaoluoboInfo.title == xiaoluoboInfo.title,
         #                                          XiaoluoboInfo.locationName == xiaoluoboInfo.locationName,
         #                                          XiaoluoboInfo.locationAddress == xiaoluoboInfo.locationAddress,
@@ -140,8 +140,8 @@ def sendEmail():
         print("构建准备数据----------->")
         for activity in newActivityList:
             prices = ''
-            if len(json.loads(json.loads(activity.get('priceItems')))) != 0:
-                for i in json.loads(json.loads(activity.get('priceItems'))):
+            if len(json.loads(activity.get('priceItems'))) != 0:
+                for i in json.loads(activity.get('priceItems')):
                     # print(i)
                     price = f'&nbsp;&nbsp;&nbsp;&nbsp;选项名：{str(i.get("name"))}<br>&nbsp;&nbsp;&nbsp;&nbsp;价格：{str(i.get("price"))}<br>&nbsp;&nbsp;&nbsp;&nbsp;--<br>'
                     prices += price

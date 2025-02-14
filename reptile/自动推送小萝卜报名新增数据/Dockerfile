@@ -1,11 +1,13 @@
 # 使用官方Python基础镜像
-FROM python:3.9-slim
+FROM docker.1ms.run/library/python:3.9-slim
 # 设置工作目录
 WORKDIR /app
 # 将项目的依赖文件和文件复制到工作目录
 COPY . /app
 # 安装依赖
-RUN pip install --no-index --find-links=/app/packet -r  /app/requirements.txt
+RUN pip config set global.progress_bar off   # 防止线程不够用的情况
+RUN pip install --upgrade pip setuptools -i https://pypi.tuna.tsinghua.edu.cn/simple
+RUN pip install -r  /app/requirements.txt
 # 暴露应用的端口
 #EXPOSE 5000
 # 映射文件

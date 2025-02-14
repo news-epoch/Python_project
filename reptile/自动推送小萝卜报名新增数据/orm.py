@@ -15,10 +15,12 @@ class XiaoluoboInfo(Base):
     endAt = Column(DateTime)
     locationAddress = Column(String(254))
     priceItems = Column(String(254))   # 报名金额
+    targetOrgName = Column(String(254))
 
 
-    def __init__(self, id, title, locationName, attendCount, count, createdAt, endAt, locationAddress, priceItems):
+    def __init__(self, id, title, locationName, attendCount, count, createdAt, endAt, locationAddress, priceItems, targetOrgName):
         # self.description = description
+        self.targetOrgName = targetOrgName
         self.locationAddress = locationAddress
         self.endAt = endAt
         self.createdAt = createdAt
@@ -32,4 +34,4 @@ class XiaoluoboInfo(Base):
     def to_dict(self):
         return dict(id=self.id, title=self.title, locationName=self.locationName,
                     attendCount=self.attendCount, count=self.count, createdAt=self.createdAt,
-                    endAt=self.endAt, locationAddress=self.locationAddress, priceItems=self.priceItems)
+                    endAt=self.endAt, locationAddress=self.locationAddress, priceItems=self.priceItems, targetOrgName=self.targetOrgName)

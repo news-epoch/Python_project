@@ -152,5 +152,7 @@ def sendEmail():
             message += msg
         print(message)
         if message != '':
-            print('存在数据，开始发送')
+            print('存在数据，开始发送邮件.......')
             s.send(application.get('email').get('acceptEmail'), '小萝卜活动数据新增', message)
+        else:
+            print("不存在数据，不发送邮件.......")

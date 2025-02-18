@@ -1,5 +1,6 @@
 import datetime
 import json
+import time
 
 import pymysql
 import requests
@@ -75,7 +76,14 @@ def getXiaoLuoBoData(xLCSign, xLCSession, xLCId):
         "X-LC-Id": xLCId
         # Host: api.xiaobaoming.com
     }
-    response = requests.session().get(url=url, params=params, headers=headers, verify=False)
+    response = None
+    for i in range(1,10):
+        try:
+            response = requests.session().get(url=url, params=params, headers=headers, verify=False)
+            break
+        except Exception as e:
+            print(e)
+            time.sleep(10)
     data = []
     for result in response.json()['results']:
         # print(json.dumps(result, ensure_ascii=False))
@@ -134,13 +142,20 @@ def save(url, headers):
 
 def sendEmail():
     application = applicationYml()
-    newActivityList = save(application.get('mysql').get('url'), application.get('headers'))
-    # print(newActivityList)
-    s = QQEmail.MailClient(host=application.get('email').get('sendHost'), user=application.get('email').get('sendEmail'), pwd=application.get('email').get('sendPass'))
-    if len(newActivityList) != 0:
+    new_activity_list = None
+    qq_email_client = None
+    for i in range(1,10):
+        try:
+            new_activity_list = save(application.get('mysql').get('url'), application.get('headers'))
+            qq_email_client = QQEmail.MailClient(host=application.get('email').get('sendHost'), user=application.get('email').get('sendEmail'), pwd=application.get('email').get('sendPass'))
+            break
+        except Exception as e:
+            print(e)
+    # print(new_activity_list)
+    if len(new_activity_list) != 0:
         message = ''
         print("构建准备数据----------->")
-        for activity in newActivityList:
+        for activity in new_activity_list:
             print(activity)
             prices = ''
             if len(json.loads(activity.get('priceItems'))) != 0:
@@ -153,6 +168,6 @@ def sendEmail():
         print(message)
         if message != '':
             print('存在数据，开始发送邮件.......')
-            s.send(application.get('email').get('acceptEmail'), '小萝卜活动数据新增', message)
+            qq_email_client.send(application.get('email').get('acceptEmail'), '小萝卜活动数据新增', message)
         else:
             print("不存在数据，不发送邮件.......")

@@ -11,7 +11,7 @@ if __name__ == '__main__':
     appId = "124496550402457600"
     appSecret = "slfLDWAMD2sI4PEsNG5"
     timestamp = int(round(time.time() * 1000))
-    sign = tools.获取签名(appId,appSecret, timestamp)
+    sign = tools.获取签名(appId, appSecret, timestamp)
     headers = {
         "Content-Type": "application/json",
         "X-Ec-Cid": corpId,

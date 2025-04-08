@@ -1,2 +1,5 @@
+# 填写综合排名、收益率、收益额、跟单者人数
 rank_type: "综合排名"
-max_workers: 6
+max_workers: 12
+# 1 是慢抓取， 2 是快速抓取
+reptile_type: 2

@@ -1,5 +1,13 @@
 # 填写综合排名、收益率、收益额、跟单者人数
 rank_type: "综合排名"
 max_workers: 12
-# 1 是慢抓取， 2 是快速抓取
-reptile_type: 2
+# 1 是慢抓取， 2 是快速抓取， 3 获取k线图
+reptile_type: 3
+
+# 当replite_type = 3 时
+proxies_type: 'socks5'     # 代理类型
+proxies_http_port: "10809"    # 代理http端口
+proxies_https_port: "10808"    # 代理https端口
+symbol: "BTC/USDT"    # 分类
+timeframe: "1d"     # 间隔时间 1天=1d、1分钟=1m、1秒钟=1s、1周=1w
+limit: 100     # 条数

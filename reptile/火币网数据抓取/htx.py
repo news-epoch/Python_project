@@ -3,6 +3,7 @@ import os
 import sys
 import time
 
+import ccxt
 import requests
 from urllib3.exceptions import InsecureRequestWarning
 
@@ -348,3 +349,27 @@ class hbg:
             else:
                 break
         return {"历史带单": history_data, "当前带单": today_data}
+
+    def k_link(self, proxie_type: str = 'socks5', proxies_http_port: str = '10809', proxies_https_port: str = '10808',symbol: str = 'BTC/USDT', timeframe: str = '1d', limit: int = 100):
+        exchange = ccxt.binance({
+            'proxies': {
+                'http': f'{proxie_type}://127.0.0.1:{proxies_http_port}',  # SOCKS5 代理
+                'https': f'{proxie_type}://127.0.0.1:{proxies_https_port}',
+            }
+        })
+
+        # 定义交易对和时间间隔
+        symbol = symbol  # 交易对
+        timeframe = timeframe  # 时间间隔（1小时）
+        limit = limit  # 获取最近100根K线
+
+        try:
+            # 获取 OHLCV 数据
+            ohlcv = exchange.fetch_ohlcv(symbol, timeframe, limit=limit)
+
+            # 转换为 DataFrame
+            return ohlcv
+
+
+        except Exception as e:
+            print(f"获取数据失败: {e}")

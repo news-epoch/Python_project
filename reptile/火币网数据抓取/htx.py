@@ -4,7 +4,6 @@ import sys
 import time
 
 import ccxt
-from ccxt.base.exchange import Exchange
 import requests
 import urllib3
 from urllib3.exceptions import InsecureRequestWarning

@@ -260,13 +260,15 @@ class hbg:
                 for order in result['data']['orders']:
                     history_data.append({
                         "用户名": nick_name,
-                        "跟单人数": copy_user_num,
+                        "当前跟单人数": copy_user_num,
                         "合约": order['symbol'],
-                        "方向/杠杆": f"{direction.get(order['direction'])}/{order['lever']}X · 全仓",
+                        "方向": f"{direction.get(order['direction'])}",
+                        "杠杆": f"{order['lever']}X·全仓",
                         "开仓价格(USDT)": f"{order['openPrice']}",
                         "开仓数量": f"{order['openAmount']}ETH",
                         "平仓价格(USDT)": order['closePrice'],
-                        "收益额(USDT)": f"{order['profit']}%({order['profitRate']}%)",
+                        "收益额(USDT)": f"{order['profit']}",
+                        "收益率(%)": f"{order['profitRate']}%",
                         "带单分成(USDT)": order['followTakes'],
                         "跟单人数": order['followerCounts'],
                         "止盈价格(USDT)": order['profitPrice'],
@@ -311,17 +313,18 @@ class hbg:
                         "用户名": str(nick_name),
                         "跟单人数": str(copy_user_num),
                         "合约": order['symbol'],
-                        "方向/杠杆": f"{direction.get(order['direction'])}/{order['lever']}X · 全仓",
+                        "方向": f"{direction.get(order['direction'])}",
+                        "杠杆": f"{order['lever']}X·全仓",
                         "开仓价格(USDT)": f"{order['openPrice']}",
                         "开仓数量": f"{order['openAmount']}ETH",
                         "保证金(USDT)": order['bondAmount'],
-                        "收益额(USDT)": f"{order['openProfit']}%({order['openProfitRate']}%)",
+                        "收益额(USDT)": f"{order['openProfit']}",
+                        "收益率(%)": f"{order['openProfitRate']}%",
                         "止盈价格(USDT)": order['stopProfitPrice'],
                         "开仓手续费(USDT)": order['openFee'],
                         "止损价格(USDT)": order['stopLossPrice'],
                         "预估爆仓价格(USDT)": order['explosionPrice'],
-                        "开仓时间": datetime.datetime.utcfromtimestamp(order['openTime'] / 1000).strftime(
-                            "%Y-%m-%d %H:%M:%S"),
+                        "开仓时间": datetime.datetime.utcfromtimestamp(order['openTime'] / 1000).strftime("%Y-%m-%d %H:%M:%S"),
                     })
         return today_data
 

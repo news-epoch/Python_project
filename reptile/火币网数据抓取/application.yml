@@ -1,8 +1,8 @@
 # 填写综合排名、收益率、收益额、跟单者人数
 rank_type: "综合排名"
 max_workers: 12
-# 1 是慢抓取， 2 是快速抓取， 3 获取k线图
-reptile_type: 3
+# 1 是慢抓取， 2 是快速抓取， 3 获取k线图，用 2 和 3
+reptile_type: 2
 
 # 当replite_type = 3 时
 proxies_type: 'socks5'     # 代理类型

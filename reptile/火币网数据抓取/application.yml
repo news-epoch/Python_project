@@ -8,6 +8,9 @@ reptile_type: 3
 proxies_type: 'socks5'     # 代理类型
 proxies_http_port: "10809"    # 代理http端口
 proxies_https_port: "10808"    # 代理https端口
+exchange_name: "binance"    #
 symbol: "BTC/USDT"    # 分类
-timeframe: "1d"     # 间隔时间 1天=1d、1分钟=1m、1秒钟=1s、1周=1w
-limit: 100     # 条数
+timeframe: "5m"     # 间隔时间 1天=1d、1分钟=1m、1秒钟=1s、1周=1w
+start_time: "2023-01-01"     # 开始时间
+end_time: "2023-01-31"        # 结束时间
+#limit: 100     # 条数

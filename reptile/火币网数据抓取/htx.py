@@ -4,10 +4,12 @@ import sys
 import time
 
 import ccxt
+from ccxt.base.exchange import Exchange
 import requests
+import urllib3
 from urllib3.exceptions import InsecureRequestWarning
 
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+urllib3.disable_warnings(InsecureRequestWarning)
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -350,26 +352,67 @@ class hbg:
                 break
         return {"历史带单": history_data, "当前带单": today_data}
 
-    def k_link(self, proxie_type: str = 'socks5', proxies_http_port: str = '10809', proxies_https_port: str = '10808',symbol: str = 'BTC/USDT', timeframe: str = '1d', limit: int = 100):
-        exchange = ccxt.binance({
-            'proxies': {
+    def k_link(self,
+               proxie_type: str = 'socks5',
+               proxies_http_port: str = '10809',
+               proxies_https_port: str = '10808',
+               symbol: str = 'BTC/USDT',
+               timeframe: str = '1d',
+               start_time: str = '2023-01-01',
+               end_time: str = '2023-01-31',
+               exchange_name: str = 'binance'
+               ):
+        proxies = {
                 'http': f'{proxie_type}://127.0.0.1:{proxies_http_port}',  # SOCKS5 代理
                 'https': f'{proxie_type}://127.0.0.1:{proxies_https_port}',
             }
+
+        # exchange = ccxt.binance({
+        #     'proxies': {
+        #         'http': f'{proxie_type}://127.0.0.1:{proxies_http_port}',  # SOCKS5 代理
+        #         'https': f'{proxie_type}://127.0.0.1:{proxies_https_port}',
+        #     }
+        # })
+
+
+
+        # 初始化交易所
+        exchange = getattr(ccxt, exchange_name)({
+            'enableRateLimit': True,  # 启用请求频率限制
+            "proxies": proxies
         })
 
-        # 定义交易对和时间间隔
-        symbol = symbol  # 交易对
-        timeframe = timeframe  # 时间间隔（1小时）
-        limit = limit  # 获取最近100根K线
+        # 将时间转换为毫秒时间戳
+        since = int(datetime.datetime.strptime(start_time, '%Y-%m-%d').timestamp() * 1000)
+        end_time = int(datetime.datetime.strptime(end_time, '%Y-%m-%d').timestamp() * 1000)
 
-        try:
-            # 获取 OHLCV 数据
-            ohlcv = exchange.fetch_ohlcv(symbol, timeframe, limit=limit)
+        all_ohlcv = []
 
-            # 转换为 DataFrame
-            return ohlcv
+        while since < end_time:
+            try:
+                # 获取数据
+                ohlcv = exchange.fetch_ohlcv(symbol, timeframe, since)
+                if not ohlcv:
+                    break  # 无更多数据
 
+                # 提取最后一条数据的时间戳，作为下次请求的起始点
+                last_timestamp = ohlcv[-1][0]
+                if last_timestamp >= end_time:
+                    # 过滤超出结束时间的数据
+                    filtered = [candle for candle in ohlcv if candle[0] < end_time]
+                    all_ohlcv.extend(filtered)
+                    break
+                else:
+                    all_ohlcv.extend(ohlcv)
 
-        except Exception as e:
-            print(f"获取数据失败: {e}")
+                # 更新起始时间（避免重复）
+                since = last_timestamp + 1  # 加1毫秒
+
+                # 控制请求频率（根据交易所限制调整）
+                time.sleep(exchange.rateLimit / 1000)  # 默认延迟
+
+            except Exception as e:
+                print(f"Error: {e}")
+                break
+
+        return all_ohlcv

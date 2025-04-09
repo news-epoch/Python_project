@@ -64,14 +64,21 @@ if __name__ == '__main__':
             history_data.extend(future.result().get("历史带单"))
             today_data.extend(future.result().get("当前带单"))
     elif application['reptile_type'] ==3:
-        ohlcv = hbg.k_link(application['proxies_type'], application['proxies_http_port'], application['proxies_https_port'], application['symbol'], application['timeframe'], application['limit'])
+        ohlcv = hbg.k_link(application['proxies_type'],
+                           application['proxies_http_port'],
+                           application['proxies_https_port'],
+                           application['symbol'],
+                           application['timeframe'],
+                           application['start_time'],
+                           application['end_time'],
+                           application['exchange_name'])
 
     now_time = datetime.datetime.now().strftime("%Y%m%d%H")
     if ohlcv !=None:
         df = pandas.DataFrame(ohlcv, columns=["时间", "开盘价", "最高价", "最低价", "收盘价", "成交量"])
         # 时间戳转换为 UTC 时间
         df["时间"] = pandas.to_datetime(df["时间"], unit="ms")
-        df.to_excel(f"{now_time}{str(application['symbol']).replace('/', '_')}_{application['timeframe']}_K线图.xlsx",index=False)
+        df.to_excel(f"{application['start_time']}-{application['end_time']}_{str(application['symbol']).replace('/', '_')}_{application['timeframe']}_K线图.xlsx",index=False)
     else:
         pandas.DataFrame(history_data).to_excel(now_time + "历史带单数据.xlsx", index=False)
         pandas.DataFrame(today_data).to_excel(now_time + "当前带单数据.xlsx", index=False)

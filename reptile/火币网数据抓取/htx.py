@@ -338,19 +338,24 @@ class hbg:
             temp = self.get_history_order_info(user_sign=user_sign['userSign'], nick_name=user_sign['nickName'],
                                                copy_user_num=user_sign['copyUserNum'], page=history_page, page_size=100)
             if len(temp) > 0:
+                print(f"获取成功：{user_sign['nickName']}第{history_page}页的{len(temp)}条历史带单数据")
                 history_page += 1
                 history_data.extend(temp)
                 time.sleep(1)
             else:
+                print(f"获取失败：{user_sign['nickName']}第{history_page}页《不存在》当前带单数据")
                 break
         while True:
             temp = self.get_today_order_info(user_sign=user_sign['userSign'], nick_name=user_sign['nickName'],
                                              copy_user_num=user_sign['copyUserNum'], page=today_page, page_size=100)
+
             if len(temp) > 0:
+                print(f"获取成功：{user_sign['nickName']}第{today_page}页的{len(temp)}条当前带单数据")
                 today_page += 1
                 today_data.extend(temp)
                 time.sleep(1)
             else:
+                print(f"获取失败：{user_sign['nickName']}第{today_page}页《不存在》当前带单数据")
                 break
         return {"历史带单": history_data, "当前带单": today_data}
 
@@ -379,6 +384,7 @@ class hbg:
 
 
         # 初始化交易所
+        print(f"正在初始化交易所：{exchange_name}")
         exchange = getattr(ccxt, exchange_name)({
             'enableRateLimit': True,  # 启用请求频率限制
             "proxies": proxies
@@ -392,11 +398,11 @@ class hbg:
 
         while since < end_time:
             try:
+                print(f"K线图数据获取数据中.......")
                 # 获取数据
                 ohlcv = exchange.fetch_ohlcv(symbol, timeframe, since)
                 if not ohlcv:
                     break  # 无更多数据
-
                 # 提取最后一条数据的时间戳，作为下次请求的起始点
                 last_timestamp = ohlcv[-1][0]
                 if last_timestamp >= end_time:
@@ -416,5 +422,5 @@ class hbg:
             except Exception as e:
                 print(f"Error: {e}")
                 break
-
+        print("K线图数据获取完成")
         return all_ohlcv

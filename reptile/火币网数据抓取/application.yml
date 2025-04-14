@@ -2,7 +2,7 @@
 rank_type: "综合排名"
 max_workers: 12
 # 1 是慢抓取， 2 是快速抓取， 3 获取k线图，用 2 和 3
-reptile_type: 3
+reptile_type: 2
 
 # 当replite_type = 3 时
 proxies_type: 'socks5'     # 代理类型
@@ -14,3 +14,28 @@ timeframe: "5m"     # 间隔时间 1天=1d、1分钟=1m、1秒钟=1s、1周=1w
 start_time: "2023-01-01"     # 开始时间
 end_time: "2023-01-31"        # 结束时间
 #limit: 100     # 条数
+
+
+logging:
+  version: 1
+  disable_existing_loggers: False
+  formatters:
+    simple:
+      format: "%(asctime)s %(levelname)-8s [%(threadName)s] %(name)s %(filename)s: %(lineno)d: %(message)s"
+  handlers:
+    console:
+      class: logging.StreamHandler
+      level: INFO
+      formatter: simple
+    file:
+      class: logging.handlers.TimedRotatingFileHandler
+      filename: ./logs/app.log
+      level: INFO
+      formatter: simple
+      encoding: UTF-8
+      when: d
+      interval: 1
+      backupCount: 30
+  root:
+    level: INFO
+    handlers: [file,console]

@@ -1,13 +1,18 @@
 import concurrent.futures
 import datetime
+import logging
+import logging.config as log_config
 from concurrent.futures import ThreadPoolExecutor
 
 import pandas
 
 import htx
+# 基础配置（只需在程序入口配置一次）
+application = htx.load_yaml()
+log_config.dictConfig(application['logging'])
+logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
-    application = htx.load_yaml()
     hbg = htx.hbg(application['rank_type'])
 
     history_data = []
@@ -33,8 +38,8 @@ if __name__ == '__main__':
 
         concurrent.futures.wait(futures)
         for future in futures:
-            print(future.result())
-            # print(future.result())
+            logger.info(future.result())
+            # logger.info(future.result())
             history_data.extend(future.result().get("历史带单"))
             today_data.extend(future.result().get("当前带单"))
         # for user_sign in user_signs:
@@ -60,7 +65,7 @@ if __name__ == '__main__':
 
         concurrent.futures.wait(futures)
         for future in futures:
-            # print(future.result())
+            # logger.info(future.result())
             history_data.extend(future.result().get("历史带单"))
             today_data.extend(future.result().get("当前带单"))
     elif application['reptile_type'] ==3:

@@ -1,4 +1,5 @@
 import datetime
+import logging
 import os
 import sys
 import time
@@ -6,6 +7,7 @@ import time
 import ccxt
 import requests
 import urllib3
+from dateutil.relativedelta import relativedelta
 from urllib3.exceptions import InsecureRequestWarning
 
 urllib3.disable_warnings(InsecureRequestWarning)
@@ -17,7 +19,14 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 import yaml
 
+
+
+# 创建日志记录器
+logger = logging.getLogger(__name__)
+
+
 url = 'https://futures.htx.com.de/zh-cn/futures/copy_trading/home/'
+
 
 rank_type_map = {
     '综合排名': 0,
@@ -44,6 +53,12 @@ def load_yaml():
         a = fp.read()
         return yaml.load(a, Loader=yaml.FullLoader)
 
+def time_diff(start_time :str=None, end_time :str=None):
+    time1 = datetime.datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
+    time2 = datetime.datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
+    time_interval = relativedelta(time2, time1)
+    return f"{time_interval.days}天{time_interval.hours}小时{time_interval.minutes}分"
+
 
 class hbg:
     def __init__(self, rank_type: str = "综合排名"):
@@ -55,7 +70,7 @@ class hbg:
             "rankType": rank_type_map.get(self.rank_type),
             "pageNo": page,
             "pageSize": 12,
-            "x-b3-traceid": "d1546a6caf35514cecf3ee7d2bcd17ad"
+            # "x-b3-traceid": "232338957620d3014ae8538c09ae7c7e"
         }
         headers = {
             "host": "futures.htx.com.de",
@@ -69,9 +84,9 @@ class hbg:
                 if response.status_code == requests.codes.ok:
                     return response.json()
                 else:
-                    print(f"响应结果异常：{response.json()}")
+                    logger.info(f"响应结果异常：{response.json()}")
             except Exception as e:
-                print(f"请求异常：{e}")
+                logger.info(f"请求异常：{e}")
         return None
 
     def create_driver(self, user_sign):
@@ -93,13 +108,13 @@ class hbg:
         order_types = ['历史带单', '当前带单']
 
         # 点击带单选项
-        print("================================")
+        logger.info("================================")
         for order_type in order_types:
             username = chromebro.find_element(By.XPATH, "//label[contains(@class, 'user-name')]").text
             user_sub = chromebro.find_element(By.XPATH, "//ul[contains(@class, 'user-sub-data')]/li/label").text
 
             if order_type == '历史带单':
-                print("获取历史带单数据")
+                logger.info("获取历史带单数据")
                 chromebro.find_element(By.XPATH, f"//li[contains(text(),'{order_type}')]").click()
                 time.sleep(60)
                 while True:
@@ -108,10 +123,10 @@ class hbg:
                                                      "//div[@class = 'history-following-wrapper']/div[1]/table/tbody/tr")
 
                     if len(orders) < 1:
-                        print("不存在历史带单数据条停止获取数据")
+                        logger.info("不存在历史带单数据条停止获取数据")
                         break
                     for i in range(1, len(orders) + 1):
-                        print(f"获取第{i}条带单数据")
+                        logger.info(f"获取第{i}条带单数据")
                         order_info = dict()
                         element1 = f"//div[@class = 'history-following-wrapper']/div[1]/table/tbody/tr[{i}]"
                         element2 = f"//div[@class = 'history-following-wrapper']/div[1]/table/tbody/tr[{i + 1}]"
@@ -151,7 +166,7 @@ class hbg:
                         chromebro.execute_script("arguments[0].scrollIntoView();", chromebro.find_element(By.XPATH,
                                                                                                           element1 + "/td[@class='sticky border']/div[1]/span[1]"))
                         time.sleep(1)
-                        print(order_info)
+                        logger.info(order_info)
                         history_data.append(order_info)
                     try:
                         chromebro.find_element(By.XPATH,
@@ -159,21 +174,21 @@ class hbg:
                         time.sleep(10)
                         chromebro.execute_script("arguments[0].scrollIntoView();", chromebro.find_element(By.XPATH,
                                                                                                           f"//li[contains(text(),'{order_type}')]"))
-                        print("下一页")
+                        logger.info("下一页")
                     except Exception as e:
-                        print(e)
-                        print("最后一页")
+                        logger.info(e)
+                        logger.info("最后一页")
                         break
             elif order_type == '当前带单':
                 chromebro.find_element(By.XPATH, f"//li[contains(text(),'{order_type}')]").click()
                 time.sleep(60)
-                print("获取当前带单数据")
+                logger.info("获取当前带单数据")
                 while True:
                     # 获取数量
                     orders = chromebro.find_elements(By.XPATH,
                                                      "//div[@class = 'table-scroll-wrapper']/div[1]/table/tbody/tr")
                     if len(orders) < 1:
-                        print("不存在当前带单数据条跳过")
+                        logger.info("不存在当前带单数据条跳过")
                         break
 
                     for i in range(1, len(orders) + 1):
@@ -185,7 +200,7 @@ class hbg:
                         order_info['带单类型'] = order_type
 
                         # 点击详情
-                        print("点击详情")
+                        logger.info("点击详情")
                         chromebro.find_element(By.XPATH, element1 + "/td[@class='sticky border']").click()
                         time.sleep(1)
 
@@ -218,17 +233,17 @@ class hbg:
                         chromebro.execute_script("arguments[0].scrollIntoView();", chromebro.find_element(By.XPATH,
                                                                                                           f"//li[contains(text(),'{order_type}')]"))
                     except Exception as e:
-                        print("最后一页")
+                        logger.info("最后一页")
                         break
 
-        print("================================")
+        logger.info("================================")
         chromebro.close()
         return {"历史带单": history_data, "当前带单": today_data}
 
     def download_driver(self):
         # 自动下载与Chrome版本匹配的Chromedriver
         driver_path = ChromeDriverManager().install()
-        print(driver_path)
+        logger.info(driver_path)
         # driver = webdriver.Chrome(service=Service(driver_path))
 
     def get_history_order_info(self, user_sign: str = None, nick_name: str = None, copy_user_num: str = None,
@@ -268,7 +283,7 @@ class hbg:
                         "开仓数量": f"{order['openAmount']}ETH",
                         "平仓价格(USDT)": order['closePrice'],
                         "收益额(USDT)": f"{order['profit']}",
-                        "收益率(%)": f"{order['profitRate']}%",
+                        "收益率(%)": f"{round(float(order['profitRate']) * 100, 3)}%",
                         "带单分成(USDT)": order['followTakes'],
                         "跟单人数": order['followerCounts'],
                         "止盈价格(USDT)": order['profitPrice'],
@@ -280,6 +295,9 @@ class hbg:
                             "%Y-%m-%d %H:%M:%S"),
                         "平仓时间": datetime.datetime.utcfromtimestamp(order['closeTime'] / 1000).strftime(
                             "%Y-%m-%d %H:%M:%S"),
+                        "持仓时间": time_diff(datetime.datetime.utcfromtimestamp(order['openTime'] / 1000).strftime(
+                            "%Y-%m-%d %H:%M:%S"), datetime.datetime.utcfromtimestamp(order['closeTime'] / 1000).strftime(
+                            "%Y-%m-%d %H:%M:%S"))
                     })
 
         return history_data
@@ -319,7 +337,7 @@ class hbg:
                         "开仓数量": f"{order['openAmount']}ETH",
                         "保证金(USDT)": order['bondAmount'],
                         "收益额(USDT)": f"{order['openProfit']}",
-                        "收益率(%)": f"{order['openProfitRate']}%",
+                        "收益率(%)": f"{round(float(order['openProfitRate']) * 100, 3)}%",
                         "止盈价格(USDT)": order['stopProfitPrice'],
                         "开仓手续费(USDT)": order['openFee'],
                         "止损价格(USDT)": order['stopLossPrice'],
@@ -338,24 +356,24 @@ class hbg:
             temp = self.get_history_order_info(user_sign=user_sign['userSign'], nick_name=user_sign['nickName'],
                                                copy_user_num=user_sign['copyUserNum'], page=history_page, page_size=100)
             if len(temp) > 0:
-                print(f"获取成功：{user_sign['nickName']}第{history_page}页的{len(temp)}条历史带单数据")
+                logger.info(f"获取成功：{user_sign['nickName']}第{history_page}页的{len(temp)}条历史带单数据")
                 history_page += 1
                 history_data.extend(temp)
                 time.sleep(1)
             else:
-                print(f"获取失败：{user_sign['nickName']}第{history_page}页《不存在》当前带单数据")
+                logger.info(f"获取失败：{user_sign['nickName']}第{history_page}页《不存在》当前带单数据")
                 break
         while True:
             temp = self.get_today_order_info(user_sign=user_sign['userSign'], nick_name=user_sign['nickName'],
                                              copy_user_num=user_sign['copyUserNum'], page=today_page, page_size=100)
 
             if len(temp) > 0:
-                print(f"获取成功：{user_sign['nickName']}第{today_page}页的{len(temp)}条当前带单数据")
+                logger.info(f"获取成功：{user_sign['nickName']}第{today_page}页的{len(temp)}条当前带单数据")
                 today_page += 1
                 today_data.extend(temp)
                 time.sleep(1)
             else:
-                print(f"获取失败：{user_sign['nickName']}第{today_page}页《不存在》当前带单数据")
+                logger.info(f"获取失败：{user_sign['nickName']}第{today_page}页《不存在》当前带单数据")
                 break
         return {"历史带单": history_data, "当前带单": today_data}
 
@@ -384,7 +402,7 @@ class hbg:
 
 
         # 初始化交易所
-        print(f"正在初始化交易所：{exchange_name}")
+        logger.info(f"正在初始化交易所：{exchange_name}")
         exchange = getattr(ccxt, exchange_name)({
             'enableRateLimit': True,  # 启用请求频率限制
             "proxies": proxies
@@ -398,7 +416,7 @@ class hbg:
 
         while since < end_time:
             try:
-                print(f"K线图数据获取数据中.......")
+                logger.info(f"K线图数据获取数据中.......")
                 # 获取数据
                 ohlcv = exchange.fetch_ohlcv(symbol, timeframe, since)
                 if not ohlcv:
@@ -420,7 +438,7 @@ class hbg:
                 time.sleep(exchange.rateLimit / 1000)  # 默认延迟
 
             except Exception as e:
-                print(f"Error: {e}")
+                logger.info(f"Error: {e}")
                 break
-        print("K线图数据获取完成")
+        logger.info("K线图数据获取完成")
         return all_ohlcv

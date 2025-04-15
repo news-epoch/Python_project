@@ -56,6 +56,13 @@ def time_diff(start_time: str = None, end_time: str = None):
     time_interval = relativedelta(time2, time1)
     return f"{time_interval.days}天{time_interval.hours}小时{time_interval.minutes}分"
 
+def computer_rank_rate():
+    """
+    计算最大收益率
+    :return:
+    """
+
+
 
 class hbg:
     def __init__(self, rank_type: str = "综合排名"):
@@ -352,8 +359,7 @@ class hbg:
         today_data = []
 
         while True:
-            temp = self.get_history_order_info(user_sign=user_sign['userSign'], nick_name=user_sign['nickName'],
-                                               copy_user_num=user_sign['copyUserNum'], page=history_page, page_size=100)
+            temp = self.get_history_order_info(user_sign=user_sign['userSign'], nick_name=user_sign['nickName'], copy_user_num=user_sign['copyUserNum'], page=history_page, page_size=100)
             if len(temp) > 0:
                 logger.info(f"获取成功：{user_sign['nickName']}第{history_page}页的{len(temp)}条历史带单数据")
                 history_page += 1
@@ -441,15 +447,35 @@ class hbg:
 
         return all_ohlcv
 
-    def k_link_profit(self, sign_name, open_price, lever,openAmount,
-                      proxie_type: str = 'socks5',
-                      proxies_http_port: str = '10809',
-                      proxies_https_port: str = '10808',
+    def k_link_profit(self,
+                      sign_name,
+                      open_price,
+                      lever,
+                      openAmount,
                       symbol: str = 'BTC/USDT',
                       timeframe: str = '1d',
                       start_time: str = '2023-01-01',
                       end_time: str = '2023-01-31',
+                      proxie_type: str = 'socks5',
+                      proxies_http_port: str = '10809',
+                      proxies_https_port: str = '10808',
                       exchange_name: str = 'binance', ):
+        """
+        :param sign_name:  带单人
+        :param open_price:  开仓价格
+        :param lever:  杠杆
+        :param openAmount: 持仓数量
+        :param proxie_type:
+        :param proxies_http_port:
+        :param proxies_https_port:
+        :param symbol: 虚拟货币类型
+        :param timeframe: 间隔时间
+        :param start_time: 开始时间
+        :param end_time: 结束时间
+        :param exchange_name:  交易所
+        :return:
+        """
+
         proxies = {
             'http': f'{proxie_type}://127.0.0.1:{proxies_http_port}',  # SOCKS5 代理
             'https': f'{proxie_type}://127.0.0.1:{proxies_https_port}',
@@ -470,8 +496,8 @@ class hbg:
         })
 
         # 将时间转换为毫秒时间戳
-        since = int(datetime.datetime.strptime(start_time, '%Y-%m-%d').timestamp() * 1000)
-        end_time = int(datetime.datetime.strptime(end_time, '%Y-%m-%d').timestamp() * 1000)
+        since = int(datetime.datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
+        end_time = int(datetime.datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
 
         all_ohlcv = []
 
@@ -503,7 +529,14 @@ class hbg:
                 break
         logger.info("K线图数据获取完成")
         for i in all_ohlcv:
-            close_price =  i[4]
-            i[6] = f"{((openAmount * (open_price-close_price)) - (openAmount * (open_price + close_price) * 0.0006))/(openAmount * open_price / lever) * 100}"
 
+            # max_price = max([float(i[1]), float(i[2]), float([3]), float(i[4])])
+            # min_price = min([float(i[1]), float(i[2]), float([3]), float(i[4])])
+            max_price = max(i[1:5])
+            min_price = min(i[1:5])
+
+            # i.append(f"{round(((float(openAmount) * (float(open_price) - float(max_price))) - (float(openAmount) * (float(open_price) + float(max_price)) * 0.0006))/(float(openAmount) * float(open_price) / int(lever)) * 100, 2)}%")
+            # i.append(f"{round(((float(openAmount) * (float(open_price) - float(min_price))) - (float(openAmount) * (float(open_price) + float(min_price)) * 0.0006))/(float(openAmount) * float(open_price) / int(lever)) * 100,2)}%")
+            i.append(f"{round((open_price-max_price)/open_price * lever * 100,2)}%")
+            i.append(f"{round((open_price-min_price)/open_price * lever * 100,2)}%")
         return all_ohlcv

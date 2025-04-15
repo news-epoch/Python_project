@@ -1,35 +1,52 @@
 import datetime
+import logging
 import os
 import sys
 
+import pandas
+
 import htx
 import sys
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
-                             QComboBox, QLabel, QLineEdit, QFormLayout, QStackedWidget)
+# from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
+#                              QComboBox, QLabel, QLineEdit, QFormLayout, QStackedWidget)
 
 
 # GUIdemo1.py
 # Demo1 of GUI by PqYt5
 # Copyright 2021 Youcans, XUPT
 # Crated：2021-10-06
+import logging.config as log_config
+
+# if __name__ == '__main__':
+#     from dateutil.relativedelta import relativedelta
+application = htx.load_yaml()
+log_config.dictConfig(application['logging'])
+logger = logging.getLogger(__name__)
 
 
 if __name__ == '__main__':
-    from dateutil.relativedelta import relativedelta
+    hbg = htx.hbg()
+    test = hbg.k_link_profit(
+        sign_name="八年交易经验",
+        open_price="1863.63",
+        lever=200,
+        openAmount="0.11",
+        symbol="ETH/USDT",
+        timeframe="30m",
+        start_time="2025-04-01 02:00:00",
+        end_time="2025-04-06 21:00:00",
+        proxie_type="socks5",
+        proxies_http_port="10809",
+        proxies_https_port="10808",
+        exchange_name="binance"
+    )
 
-    time_str1 = '2022-01-01 11:59:00'
-    time_str2 = '2022-01-01 14:30:00'
-    time1 = datetime.datetime.strptime(time_str1, '%Y-%m-%d %H:%M:%S')
-    time2 = datetime.datetime.strptime(time_str2, '%Y-%m-%d %H:%M:%S')
-    time_interval = relativedelta(time2, time1)
-    print(f"{time_interval.days}天{time_interval.hours}小时{time_interval.minutes}分")
+    df = pandas.DataFrame(test, columns=["时间", "开盘价", "最高价", "最低价", "收盘价", "成交量", "最小收益率", "最大收益率"])
+    df["时间"] = pandas.to_datetime(df["时间"], unit="ms")
+    df.to_excel("test.xlsx", index=False)
+    # results = hbg.get_rank()
+    # print(results)
+    #
+    # print(hbg.download_driver())
 
-
-# if __name__ == '__main__':
-#     hbg = htx.hbg("综合排名")
-#     # results = hbg.get_rank()
-#     # print(results)
-#     #
-#     # print(hbg.download_driver())
-#
-#     print(datetime.datetime.utcfromtimestamp(1742911056607/1000).strftime("%Y-%m-%d %H:%M:%S"))
+    # print(datetime.datetime.utcfromtimestamp(1742911056607/1000).strftime("%Y-%m-%d %H:%M:%S"))

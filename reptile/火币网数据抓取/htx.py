@@ -19,14 +19,10 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 import yaml
 
-
-
 # 创建日志记录器
 logger = logging.getLogger(__name__)
 
-
 url = 'https://futures.htx.com.de/zh-cn/futures/copy_trading/home/'
-
 
 rank_type_map = {
     '综合排名': 0,
@@ -53,7 +49,8 @@ def load_yaml():
         a = fp.read()
         return yaml.load(a, Loader=yaml.FullLoader)
 
-def time_diff(start_time :str=None, end_time :str=None):
+
+def time_diff(start_time: str = None, end_time: str = None):
     time1 = datetime.datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
     time2 = datetime.datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
     time_interval = relativedelta(time2, time1)
@@ -148,17 +145,17 @@ class hbg:
                         order_info['跟单人数'] = chromebro.find_element(By.XPATH, element1 + "/td[7]/span").text
 
                         order_info['止盈价格(USDT)'] = chromebro.find_element(By.XPATH,
-                                                                              element2 + "/td[1]/div/div[1]/div[2]/span").text
+                                                                          element2 + "/td[1]/div/div[1]/div[2]/span").text
                         order_info['开仓手续费(USDT)'] = chromebro.find_element(By.XPATH,
-                                                                                element2 + "/td[1]/div/div[2]/div[2]/span").text
+                                                                           element2 + "/td[1]/div/div[2]/div[2]/span").text
                         order_info['平仓手续费(USDT)'] = chromebro.find_element(By.XPATH,
-                                                                                element2 + "/td[1]/div/div[3]/div[2]/span").text
+                                                                           element2 + "/td[1]/div/div[3]/div[2]/span").text
                         order_info['平仓方式'] = chromebro.find_element(By.XPATH,
-                                                                        element2 + "/td[1]/div/div[4]/div[2]/span").text
+                                                                    element2 + "/td[1]/div/div[4]/div[2]/span").text
                         order_info['开仓时间'] = chromebro.find_element(By.XPATH,
-                                                                        element2 + "/td[1]/div/div[5]/div[2]/span").text
+                                                                    element2 + "/td[1]/div/div[5]/div[2]/span").text
                         order_info['平仓时间'] = chromebro.find_element(By.XPATH,
-                                                                        element2 + "/td[1]/div/div[6]/div[2]/span").text
+                                                                    element2 + "/td[1]/div/div[6]/div[2]/span").text
 
                         chromebro.find_element(By.XPATH,
                                                element1 + "/td[@class='sticky border']/div[1]/span[1]").click()
@@ -212,15 +209,15 @@ class hbg:
                         order_info['收益额(USDT)'] = chromebro.find_element(By.XPATH, element1 + "/td[6]/span").text
 
                         order_info['止盈价格(USDT)'] = chromebro.find_element(By.XPATH,
-                                                                              element2 + "/td[1]/div/div[1]/div[2]/span").text
+                                                                          element2 + "/td[1]/div/div[1]/div[2]/span").text
                         order_info['止损价格(USDT)'] = chromebro.find_element(By.XPATH,
-                                                                              element2 + "/td[1]/div/div[2]/div[2]/span").text
+                                                                          element2 + "/td[1]/div/div[2]/div[2]/span").text
                         order_info['预估爆仓价格(USDT)'] = chromebro.find_element(By.XPATH,
-                                                                                  element2 + "/td[1]/div/div[3]/div[2]/span").text
+                                                                            element2 + "/td[1]/div/div[3]/div[2]/span").text
                         order_info['开仓手续费(USDT)'] = chromebro.find_element(By.XPATH,
-                                                                                element2 + "/td[1]/div/div[4]/div[2]/span").text
+                                                                           element2 + "/td[1]/div/div[4]/div[2]/span").text
                         order_info['开仓时间'] = chromebro.find_element(By.XPATH,
-                                                                        element2 + "/td[1]/div/div[5]/div[2]/span").text
+                                                                    element2 + "/td[1]/div/div[5]/div[2]/span").text
                         # order_info['平仓时间'] = chromebro.find_element(By.XPATH, element2+"/td[1]/div/div[1]/div[6]/span").text
 
                         chromebro.find_element(By.XPATH, element1 + "/td[@class='sticky border']").click()
@@ -278,7 +275,7 @@ class hbg:
                         "当前跟单人数": copy_user_num,
                         "合约": order['symbol'],
                         "方向": f"{direction.get(order['direction'])}",
-                        "杠杆": f"{order['lever']}X·全仓",
+                        "杠杆": f"{order['lever']}",
                         "开仓价格(USDT)": f"{order['openPrice']}",
                         "开仓数量": f"{order['openAmount']}ETH",
                         "平仓价格(USDT)": order['closePrice'],
@@ -296,8 +293,9 @@ class hbg:
                         "平仓时间": datetime.datetime.utcfromtimestamp(order['closeTime'] / 1000).strftime(
                             "%Y-%m-%d %H:%M:%S"),
                         "持仓时间": time_diff(datetime.datetime.utcfromtimestamp(order['openTime'] / 1000).strftime(
-                            "%Y-%m-%d %H:%M:%S"), datetime.datetime.utcfromtimestamp(order['closeTime'] / 1000).strftime(
-                            "%Y-%m-%d %H:%M:%S"))
+                            "%Y-%m-%d %H:%M:%S"),
+                            datetime.datetime.utcfromtimestamp(order['closeTime'] / 1000).strftime(
+                                "%Y-%m-%d %H:%M:%S"))
                     })
 
         return history_data
@@ -332,7 +330,7 @@ class hbg:
                         "跟单人数": str(copy_user_num),
                         "合约": order['symbol'],
                         "方向": f"{direction.get(order['direction'])}",
-                        "杠杆": f"{order['lever']}X·全仓",
+                        "杠杆": f"{order['lever']}",
                         "开仓价格(USDT)": f"{order['openPrice']}",
                         "开仓数量": f"{order['openAmount']}ETH",
                         "保证金(USDT)": order['bondAmount'],
@@ -342,7 +340,8 @@ class hbg:
                         "开仓手续费(USDT)": order['openFee'],
                         "止损价格(USDT)": order['stopLossPrice'],
                         "预估爆仓价格(USDT)": order['explosionPrice'],
-                        "开仓时间": datetime.datetime.utcfromtimestamp(order['openTime'] / 1000).strftime("%Y-%m-%d %H:%M:%S"),
+                        "开仓时间": datetime.datetime.utcfromtimestamp(order['openTime'] / 1000).strftime(
+                            "%Y-%m-%d %H:%M:%S"),
                     })
         return today_data
 
@@ -385,12 +384,12 @@ class hbg:
                timeframe: str = '1d',
                start_time: str = '2023-01-01',
                end_time: str = '2023-01-31',
-               exchange_name: str = 'binance'
+               exchange_name: str = 'binance',
                ):
         proxies = {
-                'http': f'{proxie_type}://127.0.0.1:{proxies_http_port}',  # SOCKS5 代理
-                'https': f'{proxie_type}://127.0.0.1:{proxies_https_port}',
-            }
+            'http': f'{proxie_type}://127.0.0.1:{proxies_http_port}',  # SOCKS5 代理
+            'https': f'{proxie_type}://127.0.0.1:{proxies_https_port}',
+        }
 
         # exchange = ccxt.binance({
         #     'proxies': {
@@ -398,8 +397,6 @@ class hbg:
         #         'https': f'{proxie_type}://127.0.0.1:{proxies_https_port}',
         #     }
         # })
-
-
 
         # 初始化交易所
         logger.info(f"正在初始化交易所：{exchange_name}")
@@ -441,4 +438,72 @@ class hbg:
                 logger.info(f"Error: {e}")
                 break
         logger.info("K线图数据获取完成")
+
+        return all_ohlcv
+
+    def k_link_profit(self, sign_name, open_price, lever,openAmount,
+                      proxie_type: str = 'socks5',
+                      proxies_http_port: str = '10809',
+                      proxies_https_port: str = '10808',
+                      symbol: str = 'BTC/USDT',
+                      timeframe: str = '1d',
+                      start_time: str = '2023-01-01',
+                      end_time: str = '2023-01-31',
+                      exchange_name: str = 'binance', ):
+        proxies = {
+            'http': f'{proxie_type}://127.0.0.1:{proxies_http_port}',  # SOCKS5 代理
+            'https': f'{proxie_type}://127.0.0.1:{proxies_https_port}',
+        }
+
+        # exchange = ccxt.binance({
+        #     'proxies': {
+        #         'http': f'{proxie_type}://127.0.0.1:{proxies_http_port}',  # SOCKS5 代理
+        #         'https': f'{proxie_type}://127.0.0.1:{proxies_https_port}',
+        #     }
+        # })
+
+        # 初始化交易所
+        logger.info(f"正在初始化交易所：{exchange_name}")
+        exchange = getattr(ccxt, exchange_name)({
+            'enableRateLimit': True,  # 启用请求频率限制
+            "proxies": proxies
+        })
+
+        # 将时间转换为毫秒时间戳
+        since = int(datetime.datetime.strptime(start_time, '%Y-%m-%d').timestamp() * 1000)
+        end_time = int(datetime.datetime.strptime(end_time, '%Y-%m-%d').timestamp() * 1000)
+
+        all_ohlcv = []
+
+        while since < end_time:
+            try:
+                logger.info(f"K线图数据获取数据中.......")
+                # 获取数据
+                ohlcv = exchange.fetch_ohlcv(symbol, timeframe, since)
+                if not ohlcv:
+                    break  # 无更多数据
+                # 提取最后一条数据的时间戳，作为下次请求的起始点
+                last_timestamp = ohlcv[-1][0]
+                if last_timestamp >= end_time:
+                    # 过滤超出结束时间的数据
+                    filtered = [candle for candle in ohlcv if candle[0] < end_time]
+                    all_ohlcv.extend(filtered)
+                    break
+                else:
+                    all_ohlcv.extend(ohlcv)
+
+                # 更新起始时间（避免重复）
+                since = last_timestamp + 1  # 加1毫秒
+
+                # 控制请求频率（根据交易所限制调整）
+                time.sleep(exchange.rateLimit / 1000)  # 默认延迟
+
+            except Exception as e:
+                logger.info(f"Error: {e}")
+                break
+        logger.info("K线图数据获取完成")
+        for i in all_ohlcv:
+            close_price =  i[4]
+            i[6] = f"{((openAmount * (open_price-close_price)) - (openAmount * (open_price + close_price) * 0.0006))/(openAmount * open_price / lever) * 100}"
+
         return all_ohlcv

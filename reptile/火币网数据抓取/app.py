@@ -3,6 +3,7 @@ import datetime
 import logging
 import logging.config as log_config
 from concurrent.futures import ThreadPoolExecutor
+from os import system
 
 import pandas
 
@@ -14,11 +15,13 @@ logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
     hbg = htx.hbg(application['rank_type'])
-
     history_data = []
     today_data = []
     ohlcv = None
+    now_time = datetime.datetime.now().strftime("%Y%m%d%H")
+
     if application['reptile_type'] == 1:
+        pass
         user_signs = []
 
         page = 1
@@ -77,8 +80,21 @@ if __name__ == '__main__':
                            application['start_time'],
                            application['end_time'],
                            application['exchange_name'])
+    elif application['reptile_type'] ==4:
+        data = hbg.comouter_yield(
+            historical_leads_file_path=application['compute_yield']['historical_leads_file_path'],
+            start_time=application['compute_yield']['start_time'],
+            end_time=application['compute_yield']['end_time'],
+            timeframe=application['compute_yield']['timeframe'],
+            proxie_type=application['proxies_type'],
+            proxies_http_port=application['proxies_http_port'],
+            proxies_https_port=application['proxies_https_port'],
+            exchange_name=application['exchange_name']
+        )
+        pd = pandas.DataFrame(data)
+        pd.to_excel(str(application['compute_yield']['historical_leads_file_path']).replace(".xlsx", "（计算收益版）.xlsx"), index=False)
 
-    now_time = datetime.datetime.now().strftime("%Y%m%d%H")
+
     if ohlcv !=None:
         df = pandas.DataFrame(ohlcv, columns=["时间", "开盘价", "最高价", "最低价", "收盘价", "成交量"])
         # 时间戳转换为 UTC 时间

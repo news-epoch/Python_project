@@ -414,16 +414,24 @@ class hbg:
         })
 
         # 将时间转换为毫秒时间戳
-        since = int(datetime.datetime.strptime(start_time, '%Y-%m-%d').timestamp() * 1000)
-        end_time = int(datetime.datetime.strptime(end_time, '%Y-%m-%d').timestamp() * 1000)
+        since = int(datetime.datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
+        end_time = int(datetime.datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
 
         all_ohlcv = []
 
         while since < end_time:
             try:
                 logger.info(f"K线图数据获取数据中.......")
+                ohlcv = None
                 # 获取数据
-                ohlcv = exchange.fetch_ohlcv(symbol, timeframe, since)
+                for i in range(1, 5):
+                    try:
+                        ohlcv = exchange.fetch_ohlcv(symbol, timeframe, since)
+                        break
+                    except Exception as e:
+                        logger.error(f"Error: {e}，重试4次")
+                        continue
+
                 if not ohlcv:
                     break  # 无更多数据
                 # 提取最后一条数据的时间戳，作为下次请求的起始点
@@ -443,7 +451,7 @@ class hbg:
                 time.sleep(exchange.rateLimit / 1000)  # 默认延迟
 
             except Exception as e:
-                logger.info(f"Error: {e}")
+                logger.error(f"Error: {e}")
                 break
         logger.info("K线图数据获取完成")
 
@@ -454,15 +462,7 @@ class hbg:
                       lever,
                       openAmount,
                       direction: str = "开多",
-                      all_ohlcv: list=[]
-                      # symbol: str = 'BTC/USDT',
-                      # timeframe: str = '1d',
-                      # start_time: str = '2023-01-01',
-                      # end_time: str = '2023-01-31',
-                      # proxie_type: str = 'socks5',
-                      # proxies_http_port: str = '10809',
-                      # proxies_https_port: str = '10808',
-                      # exchange_name: str = 'binance',
+                      all_ohlcv: list=list()
                       ):
         """
         :param open_price:  开仓价格
@@ -470,60 +470,6 @@ class hbg:
         :param openAmount: 持仓数量
         :return:
         """
-
-        # proxies = {
-        #     'http': f'{proxie_type}://127.0.0.1:{proxies_http_port}',  # SOCKS5 代理
-        #     'https': f'{proxie_type}://127.0.0.1:{proxies_https_port}',
-        # }
-        #
-        # # exchange = ccxt.binance({
-        # #     'proxies': {
-        # #         'http': f'{proxie_type}://127.0.0.1:{proxies_http_port}',  # SOCKS5 代理
-        # #         'https': f'{proxie_type}://127.0.0.1:{proxies_https_port}',
-        # #     }
-        # # })
-        #
-        # # 初始化交易所
-        # logger.info(f"正在初始化交易所：{exchange_name}")
-        # exchange = getattr(ccxt, exchange_name)({
-        #     'enableRateLimit': True,  # 启用请求频率限制
-        #     "proxies": proxies
-        # })
-        #
-        # # 将时间转换为毫秒时间戳
-        # since = int(datetime.datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
-        # end_time = int(datetime.datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
-        #
-        # all_ohlcv = []
-
-        # while since < end_time:
-        #     try:
-        #         logger.info(f"K线图数据获取数据中.......")
-        #         # 获取数据
-        #         ohlcv = exchange.fetch_ohlcv(symbol, timeframe, since)
-        #         if not ohlcv:
-        #             break  # 无更多数据
-        #         # 提取最后一条数据的时间戳，作为下次请求的起始点
-        #         last_timestamp = ohlcv[-1][0]
-        #         if last_timestamp >= end_time:
-        #             # 过滤超出结束时间的数据
-        #             filtered = [candle for candle in ohlcv if candle[0] < end_time]
-        #             all_ohlcv.extend(filtered)
-        #             break
-        #         else:
-        #             all_ohlcv.extend(ohlcv)
-        #
-        #         # 更新起始时间（避免重复）
-        #         since = last_timestamp + 1  # 加1毫秒
-        #
-        #         # 控制请求频率（根据交易所限制调整）
-        #         time.sleep(exchange.rateLimit / 1000)  # 默认延迟
-        #
-        #     except Exception as e:
-        #         logger.info(f"Error: {e}")
-        #         break
-        # logger.info("K线图数据获取完成")
-
         prices = list()
         for i in all_ohlcv:
             # max_price = max([float(i[1]), float(i[2]), float([3]), float(i[4])])
@@ -535,30 +481,52 @@ class hbg:
             # i.append(f"{round(((float(openAmount) * (float(open_price) - float(min_price))) - (float(openAmount) * (float(open_price) + float(min_price)) * 0.0006))/(float(openAmount) * float(open_price) / int(lever)) * 100,2)}%")
             # i.append(f"{round((open_price-max_price)/open_price * lever * 100,2)}%")
             # i.append(f"{round((open_price-min_price)/open_price * lever * 100,2)}%")
+        if len(prices) == 0:
+
+            return "0%", "0%"
         max_price = max(prices)
         min_price = min(prices)
-        if direction == "开空":
-            max_rate_price = f"{round(((float(openAmount) * (float(open_price) - float(min_price))) - (float(openAmount) * (float(open_price) + float(min_price)) * 0.0006)) / (float(openAmount) * float(open_price) / int(lever)) * 100, 2)}%"
-            min_rate_price = f"{round(((float(openAmount) * (float(open_price) - float(max_price))) - (float(openAmount) * (float(open_price) + float(max_price)) * 0.0006)) / (float(openAmount) * float(open_price) / int(lever)) * 100, 2)}%"
-        print(f"开仓价格：{open_price}\n"
-              f"闭仓价格：{1698.46}\n"
+
+        logger.info(f"开仓价格：{open_price}\n"
+              f"闭仓价格：{min_price}\n"
               f"持仓数量：{openAmount}\n"
               f"杠杆：{lever}\n"
               f"手续费：{0.0006}\n")
-        价值变化 = float(openAmount) * (float(open_price) - float(1698.46))
-        print(f"价值变化：{价值变化}")
-        总手续费 = float(openAmount) * (float(open_price) + float(1698.46)) * 0.0006
-        print(f"总手续费：{总手续费}")
+
+        logger.info("计算最大收益率：")
+        价值变化 = float(openAmount) * (float(open_price) - float(min_price))
+        logger.info(f"价值变化：{价值变化}")
+        总手续费 = float(openAmount) * (float(open_price) + float(min_price)) * 0.0006
+        logger.info(f"总手续费：{总手续费}")
         净收益 = 价值变化 - 总手续费
-        print(f"净收益：{净收益}")
+        logger.info(f"净收益：{净收益}")
         保证金 = (float(openAmount) * float(open_price)) / 200
-        print(f"保证金：{保证金}")
-        收益率 = f"{(净收益 / 保证金) * 100}%"
-        print(
-            f"验证公式：{round(((float(openAmount) * (float(open_price) - float(1698.46))) - (float(openAmount) * (float(open_price) + float(1698.46)) * 0.0006)) / (float(openAmount) * float(open_price) / int(lever)) * 100, 2)}")
-        print(f"验证公式1：{收益率}")
-        print(f"最大收益率{max_rate_price}")
-        print(f"最小收益率{min_rate_price}")
+        logger.info(f"保证金：{保证金}")
+        # 收益率 = f"{(净收益 / 保证金) * 100}%"
+        # logger.info(f"验证公式1：{收益率}")
+        max_rate_price = round(((float(openAmount) * (float(open_price) - float(min_price))) - (float(openAmount) * (float(open_price) + float(min_price)) * 0.0006)) / (float(openAmount) * float(open_price) / int(lever)) * 100, 2)
+        min_rate_price = round(((float(openAmount) * (float(open_price) - float(max_price))) - (float(openAmount) * (float(open_price) + float(max_price)) * 0.0006)) / (float(openAmount) * float(open_price) / int(lever)) * 100, 2)
+
+        if direction == "开空":
+            logger.info(f"=====================开空=========================")
+            logger.info(f"最大收益率：{max_rate_price}%")
+            logger.info(f"最小收益率：{min_rate_price}%")
+            max_rate_price = f"最大收益率：{max_rate_price}%"
+            min_rate_price = f"最小收益率：{min_rate_price}%"
+            logger.info("==============================================\n")
+        elif direction == "开多":
+            logger.info(f"=====================开多=========================")
+            logger.info(f"最大收益率：{-max_rate_price}%")
+            logger.info(f"最小收益率：{-min_rate_price}%")
+            max_rate_price = f"最大收益率：{-max_rate_price}%"
+            min_rate_price = f"最小收益率：{-min_rate_price}%"
+            logger.info("==============================================\n")
+
+        # print(
+        #     f"验证公式：{round(((float(openAmount) * (float(open_price) - float(1698.46))) - (float(openAmount) * (float(open_price) + float(1698.46)) * 0.0006)) / (float(openAmount) * float(open_price) / int(lever)) * 100, 2)}")
+
+        logger.info(f"最大收益率{max_rate_price}")
+        logger.info(f"最小收益率{min_rate_price}")
         return max_rate_price, min_rate_price
 
     def comouter_yield(self,
@@ -570,9 +538,9 @@ class hbg:
                        proxies_http_port,
                        proxies_https_port,
                        exchange_name):
-        pd1 = pandas.DataFrame(historical_leads_file_path)
+        pd1 = pandas.read_excel(historical_leads_file_path)
         k_data_list = dict()
-
+        export_data = list()
         for i in pd1.index.values:
             data = pd1.loc[i].to_dict()
             # 查询K线图数据
@@ -589,8 +557,12 @@ class hbg:
                     exchange_name=exchange_name
                 )
             data['最大收益率'], data['最小收益率'] = self.k_link_profit(
-                open_price=data['开仓价格'],
+                open_price=data['开仓价格(USDT)'],
                 lever=data['杠杆'],
-                openAmount=data['持仓数量'],
+                direction=data["方向"],
+                openAmount=str(data['开仓数量']).replace("ETH", ''),
                 all_ohlcv=k_data_list.get(str(data['合约']).replace('-', '/'))
             )
+            export_data.append(data)
+
+        return export_data

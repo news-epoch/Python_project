@@ -2,7 +2,7 @@
 rank_type: "综合排名"
 max_workers: 12
 # 1 是慢抓取， 2 是快速抓取， 3 获取k线图，用 2 和 3
-reptile_type: 2
+reptile_type: 4
 
 
 proxies_type: 'socks5'     # 代理类型
@@ -21,10 +21,10 @@ end_time: "2025-04-06"        # 结束时间
 
 # 当replite_type = 4 时
 compute_yield:
-  historical_leads_file_path: "D:\\code\\python\\Python_project\\reptile\\火币网数据抓取\\2025041322历史带单数据.xlsx"
-  start_time: "2025-03-01 00:00:00"
-  end_time: "2025-04-17 00:00:00"
-  timeframe: "5m"     # 间隔时间 1天=1d、1分钟=1m、1秒钟=1s、1周=1w
+  historical_leads_file_path: "D:\\code\\python\\Python_project\\reptile\\火币网数据抓取\\2025041801历史带单数据.xlsx"
+  start_time: ""
+  end_time: ""
+  timeframe: "30m"     # 间隔时间 1天=1d、1分钟=1m、1秒钟=1s、1周=1w
 
 
 
@@ -45,7 +45,7 @@ logging:
       formatter: simple
     file:
       class: logging.handlers.TimedRotatingFileHandler
-      filename: ./logs/app.log
+      filename: D:\\code\\python\\Python_project\\reptile\\火币网数据抓取\\logs\\app.log
       level: INFO
       formatter: simple
       encoding: UTF-8

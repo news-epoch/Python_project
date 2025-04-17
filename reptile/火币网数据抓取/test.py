@@ -2,6 +2,7 @@ import datetime
 import logging
 import os
 import sys
+from zoneinfo import ZoneInfo
 
 import pandas
 
@@ -41,8 +42,27 @@ def test01():
 def test02():
     hbg = htx.hbg()
     hbg.k_link_profit()
+def test03():
+    pd1 = pandas.read_excel(r"D:\code\python\Python_project\reptile\火币网数据抓取\2025041720历史带单数据.xlsx")
+    print(pd1.values.tolist()[0])
+
+    time1 = pd1.groupby("合约")['开仓时间'].apply(list).to_dict()
+    time2 = pd1.groupby("合约")['平仓时间'].apply(list).to_dict()
+    keys = list()
+    for key,value in time1.items():
+        time2.get(key).extend(value)
+        keys.append(str(key).replace("-","/") + "_" + datetime.datetime.strptime(str(max(time2.get(key))), "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S") + "_" + datetime.datetime.strptime(str(min(time2.get(key))), "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S"))
+
+    print(keys)
+
+def test04():
+    t = 1741822601561
+    t1 = datetime.datetime.utcfromtimestamp(t / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S")
+    print(t1)
+    t1 = datetime.datetime.utcfromtimestamp(t / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("America/New_York")).strftime('%Y-%m-%d %H:%M:%S')
+    print(t1)
 if __name__ == '__main__':
-    test01()
+    test04()
 
     # df = pandas.DataFrame(test, columns=["时间", "开盘价", "最高价", "最低价", "收盘价", "成交量", "最小收益率", "最大收益率"])
     # df["时间"] = pandas.to_datetime(df["时间"], unit="ms")

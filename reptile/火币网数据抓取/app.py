@@ -63,7 +63,6 @@ if __name__ == '__main__':
                                    'nickName': result['nickName'],
                                    'copyUserNum': f"{result['copyUserNum']}/{result['fullUserNum']}"})
         thread_pool = ThreadPoolExecutor(max_workers=application['max_workers'])
-
         futures = [thread_pool.submit(hbg.startup, user_sign) for user_sign in user_signs]
 
         concurrent.futures.wait(futures)
@@ -101,5 +100,6 @@ if __name__ == '__main__':
         df["时间"] = pandas.to_datetime(df["时间"], unit="ms")
         df.to_excel(f"{application['start_time']}-{application['end_time']}_{str(application['symbol']).replace('/', '_')}_{application['timeframe']}_K线图.xlsx",index=False)
     else:
-        pandas.DataFrame(history_data).to_excel(now_time + "历史带单数据.xlsx", index=False)
+        df1 = pandas.DataFrame(history_data)
+        df1.to_excel(now_time + "历史带单数据.xlsx", index=False)
         pandas.DataFrame(today_data).to_excel(now_time + "当前带单数据.xlsx", index=False)

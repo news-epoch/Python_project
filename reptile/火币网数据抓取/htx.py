@@ -3,6 +3,8 @@ import logging
 import os
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from zoneinfo import ZoneInfo
 
 import ccxt
 import pandas
@@ -153,17 +155,17 @@ class hbg:
                         order_info['跟单人数'] = chromebro.find_element(By.XPATH, element1 + "/td[7]/span").text
 
                         order_info['止盈价格(USDT)'] = chromebro.find_element(By.XPATH,
-                                                                          element2 + "/td[1]/div/div[1]/div[2]/span").text
+                                                                              element2 + "/td[1]/div/div[1]/div[2]/span").text
                         order_info['开仓手续费(USDT)'] = chromebro.find_element(By.XPATH,
-                                                                           element2 + "/td[1]/div/div[2]/div[2]/span").text
+                                                                                element2 + "/td[1]/div/div[2]/div[2]/span").text
                         order_info['平仓手续费(USDT)'] = chromebro.find_element(By.XPATH,
-                                                                           element2 + "/td[1]/div/div[3]/div[2]/span").text
+                                                                                element2 + "/td[1]/div/div[3]/div[2]/span").text
                         order_info['平仓方式'] = chromebro.find_element(By.XPATH,
-                                                                    element2 + "/td[1]/div/div[4]/div[2]/span").text
+                                                                        element2 + "/td[1]/div/div[4]/div[2]/span").text
                         order_info['开仓时间'] = chromebro.find_element(By.XPATH,
-                                                                    element2 + "/td[1]/div/div[5]/div[2]/span").text
+                                                                        element2 + "/td[1]/div/div[5]/div[2]/span").text
                         order_info['平仓时间'] = chromebro.find_element(By.XPATH,
-                                                                    element2 + "/td[1]/div/div[6]/div[2]/span").text
+                                                                        element2 + "/td[1]/div/div[6]/div[2]/span").text
 
                         chromebro.find_element(By.XPATH,
                                                element1 + "/td[@class='sticky border']/div[1]/span[1]").click()
@@ -217,15 +219,15 @@ class hbg:
                         order_info['收益额(USDT)'] = chromebro.find_element(By.XPATH, element1 + "/td[6]/span").text
 
                         order_info['止盈价格(USDT)'] = chromebro.find_element(By.XPATH,
-                                                                          element2 + "/td[1]/div/div[1]/div[2]/span").text
+                                                                              element2 + "/td[1]/div/div[1]/div[2]/span").text
                         order_info['止损价格(USDT)'] = chromebro.find_element(By.XPATH,
-                                                                          element2 + "/td[1]/div/div[2]/div[2]/span").text
+                                                                              element2 + "/td[1]/div/div[2]/div[2]/span").text
                         order_info['预估爆仓价格(USDT)'] = chromebro.find_element(By.XPATH,
-                                                                            element2 + "/td[1]/div/div[3]/div[2]/span").text
+                                                                                  element2 + "/td[1]/div/div[3]/div[2]/span").text
                         order_info['开仓手续费(USDT)'] = chromebro.find_element(By.XPATH,
-                                                                           element2 + "/td[1]/div/div[4]/div[2]/span").text
+                                                                                element2 + "/td[1]/div/div[4]/div[2]/span").text
                         order_info['开仓时间'] = chromebro.find_element(By.XPATH,
-                                                                    element2 + "/td[1]/div/div[5]/div[2]/span").text
+                                                                        element2 + "/td[1]/div/div[5]/div[2]/span").text
                         # order_info['平仓时间'] = chromebro.find_element(By.XPATH, element2+"/td[1]/div/div[1]/div[6]/span").text
 
                         chromebro.find_element(By.XPATH, element1 + "/td[@class='sticky border']").click()
@@ -280,30 +282,26 @@ class hbg:
                 for order in result['data']['orders']:
                     history_data.append({
                         "用户名": nick_name,
-                        "当前跟单人数": copy_user_num,
                         "合约": order['symbol'],
                         "方向": f"{direction.get(order['direction'])}",
                         "杠杆": f"{order['lever']}",
                         "开仓价格(USDT)": f"{order['openPrice']}",
-                        "开仓数量": f"{order['openAmount']}ETH",
                         "平仓价格(USDT)": order['closePrice'],
-                        "收益额(USDT)": f"{order['profit']}",
                         "收益率(%)": f"{round(float(order['profitRate']) * 100, 3)}%",
-                        "带单分成(USDT)": order['followTakes'],
-                        "跟单人数": order['followerCounts'],
                         "止盈价格(USDT)": order['profitPrice'],
-                        "开仓手续费(USDT)": order['openFee'],
-                        "平仓手续费(USDT)": order['closeFee'],
                         "平仓方式": close_type_map.get(order['closeType']) if close_type_map.get(
                             order['closeType']) is not None else order['closeType'],
-                        "开仓时间": datetime.datetime.utcfromtimestamp(order['openTime'] / 1000).strftime(
-                            "%Y-%m-%d %H:%M:%S"),
-                        "平仓时间": datetime.datetime.utcfromtimestamp(order['closeTime'] / 1000).strftime(
-                            "%Y-%m-%d %H:%M:%S"),
-                        "持仓时间": time_diff(datetime.datetime.utcfromtimestamp(order['openTime'] / 1000).strftime(
-                            "%Y-%m-%d %H:%M:%S"),
-                            datetime.datetime.utcfromtimestamp(order['closeTime'] / 1000).strftime(
-                                "%Y-%m-%d %H:%M:%S"))
+                        "开仓时间": datetime.datetime.utcfromtimestamp(order['openTime'] / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"),
+                        "平仓时间": datetime.datetime.utcfromtimestamp(order['closeTime'] / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"),
+                        "持仓时间": time_diff(datetime.datetime.utcfromtimestamp(order['closeTime'] / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"),
+                            datetime.datetime.utcfromtimestamp(order['openTime'] / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S")),
+                        "当前跟单人数": copy_user_num,
+                        "开仓数量": f"{order['openAmount']}ETH",
+                        "收益额(USDT)": f"{order['profit']}",
+                        "带单分成(USDT)": order['followTakes'],
+                        "跟单人数": order['followerCounts'],
+                        "开仓手续费(USDT)": order['openFee'],
+                        "平仓手续费(USDT)": order['closeFee'],
                     })
 
         return history_data
@@ -335,10 +333,10 @@ class hbg:
                 for order in result['data']['orders']:
                     today_data.append({
                         "用户名": str(nick_name),
-                        "跟单人数": str(copy_user_num),
                         "合约": order['symbol'],
                         "方向": f"{direction.get(order['direction'])}",
                         "杠杆": f"{order['lever']}",
+                        "跟单人数": str(copy_user_num),
                         "开仓价格(USDT)": f"{order['openPrice']}",
                         "开仓数量": f"{order['openAmount']}ETH",
                         "保证金(USDT)": order['bondAmount'],
@@ -421,15 +419,16 @@ class hbg:
 
         while since < end_time:
             try:
-                logger.info(f"K线图数据获取数据中.......")
+                logger.info(f"{symbol} K线图数据获取数据中.......")
                 ohlcv = None
                 # 获取数据
-                for i in range(1, 5):
+                for i in range(1, 10):
                     try:
                         ohlcv = exchange.fetch_ohlcv(symbol, timeframe, since)
                         break
                     except Exception as e:
-                        logger.error(f"Error: {e}，重试4次")
+                        logger.error(f"Error: {e}，重试10次")
+                        time.sleep(10)
                         continue
 
                 if not ohlcv:
@@ -448,7 +447,7 @@ class hbg:
                 since = last_timestamp + 1  # 加1毫秒
 
                 # 控制请求频率（根据交易所限制调整）
-                time.sleep(exchange.rateLimit / 1000)  # 默认延迟
+                time.sleep(exchange.rateLimit / 500)  # 默认延迟
 
             except Exception as e:
                 logger.error(f"Error: {e}")
@@ -462,7 +461,7 @@ class hbg:
                       lever,
                       openAmount,
                       direction: str = "开多",
-                      all_ohlcv: list=list()
+                      all_ohlcv: list = list()
                       ):
         """
         :param open_price:  开仓价格
@@ -482,16 +481,15 @@ class hbg:
             # i.append(f"{round((open_price-max_price)/open_price * lever * 100,2)}%")
             # i.append(f"{round((open_price-min_price)/open_price * lever * 100,2)}%")
         if len(prices) == 0:
-
-            return "0%", "0%"
+            return "0%", "0%", 0, 0
         max_price = max(prices)
         min_price = min(prices)
 
         logger.info(f"开仓价格：{open_price}\n"
-              f"闭仓价格：{min_price}\n"
-              f"持仓数量：{openAmount}\n"
-              f"杠杆：{lever}\n"
-              f"手续费：{0.0006}\n")
+                    f"闭仓价格：{min_price}\n"
+                    f"持仓数量：{openAmount}\n"
+                    f"杠杆：{lever}\n"
+                    f"手续费：{0.0006}\n")
 
         logger.info("计算最大收益率：")
         价值变化 = float(openAmount) * (float(open_price) - float(min_price))
@@ -504,30 +502,40 @@ class hbg:
         logger.info(f"保证金：{保证金}")
         # 收益率 = f"{(净收益 / 保证金) * 100}%"
         # logger.info(f"验证公式1：{收益率}")
-        max_rate_price = round(((float(openAmount) * (float(open_price) - float(min_price))) - (float(openAmount) * (float(open_price) + float(min_price)) * 0.0006)) / (float(openAmount) * float(open_price) / int(lever)) * 100, 2)
-        min_rate_price = round(((float(openAmount) * (float(open_price) - float(max_price))) - (float(openAmount) * (float(open_price) + float(max_price)) * 0.0006)) / (float(openAmount) * float(open_price) / int(lever)) * 100, 2)
+        max_rate_price = None
+        min_rate_price = None
 
         if direction == "开空":
             logger.info(f"=====================开空=========================")
+            max_rate_price = round(((float(openAmount) * (float(open_price) - float(min_price))) - (
+                    float(openAmount) * (float(open_price) + float(min_price)) * 0.0006)) / (
+                                           float(openAmount) * float(open_price) / int(lever)) * 100, 2)
+            min_rate_price = round(((float(openAmount) * (float(open_price) - float(max_price))) - (
+                    float(openAmount) * (float(open_price) + float(max_price)) * 0.0006)) / (
+                                           float(openAmount) * float(open_price) / int(lever)) * 100, 2)
             logger.info(f"最大收益率：{max_rate_price}%")
             logger.info(f"最小收益率：{min_rate_price}%")
-            max_rate_price = f"最大收益率：{max_rate_price}%"
-            min_rate_price = f"最小收益率：{min_rate_price}%"
+            max_rate_price = f"{max_rate_price}%"
+            min_rate_price = f"{min_rate_price}%"
             logger.info("==============================================\n")
         elif direction == "开多":
             logger.info(f"=====================开多=========================")
+            max_rate_price = round(((float(openAmount) * (float(min_price) - float(open_price))) - (
+                    float(openAmount) * (float(open_price) + float(min_price)) * 0.0006)) / (
+                                           float(openAmount) * float(open_price) / int(lever)) * 100, 2)
+            min_rate_price = round(((float(openAmount) * (float(max_price) - float(open_price))) - (
+                    float(openAmount) * (float(open_price) + float(max_price)) * 0.0006)) / (
+                                           float(openAmount) * float(open_price) / int(lever)) * 100, 2)
             logger.info(f"最大收益率：{-max_rate_price}%")
             logger.info(f"最小收益率：{-min_rate_price}%")
-            max_rate_price = f"最大收益率：{-max_rate_price}%"
-            min_rate_price = f"最小收益率：{-min_rate_price}%"
+            max_rate_price = f"{-max_rate_price}%"
+            min_rate_price = f"{-min_rate_price}%"
             logger.info("==============================================\n")
 
         # print(
         #     f"验证公式：{round(((float(openAmount) * (float(open_price) - float(1698.46))) - (float(openAmount) * (float(open_price) + float(1698.46)) * 0.0006)) / (float(openAmount) * float(open_price) / int(lever)) * 100, 2)}")
 
-        logger.info(f"最大收益率{max_rate_price}")
-        logger.info(f"最小收益率{min_rate_price}")
-        return max_rate_price, min_rate_price
+        return max_rate_price, min_rate_price, max_price, min_price
 
     def comouter_yield(self,
                        historical_leads_file_path,
@@ -538,31 +546,83 @@ class hbg:
                        proxies_http_port,
                        proxies_https_port,
                        exchange_name):
+
         pd1 = pandas.read_excel(historical_leads_file_path)
+
         k_data_list = dict()
         export_data = list()
-        for i in pd1.index.values:
-            data = pd1.loc[i].to_dict()
-            # 查询K线图数据
-            logger.info(f"查询{data['开仓时间']}~{data['平仓时间']}：{str(data['合约']).replace('-', '/')}K线图数据")
-            if k_data_list.get(str(data['合约']).replace('-', '/')) is None:
-                k_data_list[str(data['合约']).replace('-', '/')] = self.k_link(
-                    proxie_type=proxie_type,
-                    proxies_http_port=proxies_http_port,
-                    proxies_https_port=proxies_https_port,
-                    symbol=str(data['合约']).replace('-', '/'),
-                    timeframe=timeframe,
-                    start_time=start_time,
-                    end_time=end_time,
-                    exchange_name=exchange_name
-                )
-            data['最大收益率'], data['最小收益率'] = self.k_link_profit(
-                open_price=data['开仓价格(USDT)'],
-                lever=data['杠杆'],
-                direction=data["方向"],
-                openAmount=str(data['开仓数量']).replace("ETH", ''),
-                all_ohlcv=k_data_list.get(str(data['合约']).replace('-', '/'))
-            )
-            export_data.append(data)
+        keys = list()  # 时间类型
+        # 获取不同类型的最大时间和最小时间
+        if start_time == "" or end_time == "" or end_time == None or start_time == None:
+            time1 = pd1.groupby("合约")['开仓时间'].apply(list).to_dict()
+            time2 = pd1.groupby("合约")['平仓时间'].apply(list).to_dict()
+            for key, value in time1.items():
+                time2.get(key).extend(value)
+                keys.append(str(key).replace("-", "/") + "_" +
+                            datetime.datetime.strptime(str(min(time2.get(key))),"%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S") + "_" +
+                            datetime.datetime.strptime(str(max(time2.get(key))),"%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S"))
+        print(keys)
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            for key in keys:
+                logger.info(f"提交任务{key}")
+                k_data_list[key] = executor.submit(self.k_link,
+                                                   proxie_type,
+                                                   proxies_http_port,
+                                                   proxies_https_port,
+                                                   key.split("_")[0],
+                                                   timeframe,
+                                                   str(datetime.datetime.strptime(key.split("_")[1], "%Y%m%d%H%M%S").strftime("%Y-%m-%d %H:%M:%S")),
+                                                   str(datetime.datetime.strptime(key.split("_")[2], "%Y%m%d%H%M%S").strftime("%Y-%m-%d %H:%M:%S")),
+                                                   exchange_name)
+            as_completed(k_data_list.values())
+            for key,value in k_data_list.items():
+                logger.info(f"获取任务{key}的结果")
+                k_data_list[key] = value.result()
+        futures = []
+        with ThreadPoolExecutor(max_workers=50) as executor:
+            for i in pd1.index.values:
+                data = pd1.loc[i].to_dict()
+                # 查询K线图数据
+                # ohlcv = list()
+                futures.append(executor.submit(self.thread_computer_yield,data, k_data_list))
+            for future in as_completed(futures):
+                export_data.append(future.result())
+
+            # for key, value in k_data_list.items():
+            #     df = pandas.DataFrame(value, columns=["时间", "开盘价", "最高价", "最低价", "收盘价", "成交量"])
+            #     # 时间戳转换为 UTC 时间
+            #     df["时间"] = pandas.to_datetime(df["时间"], unit="ms")
+            #     if str(key).split("_")[0] == (str(data['合约']).replace('-', '/')):
+            #         logger.info(
+            #             f"查询{data['开仓时间']}~{data['平仓时间']}：{str(data['合约']).replace('-', '/')}K线图数据")
+            #         mask = df['时间'].between(data['开仓时间'], data['平仓时间'])
+            #         ohlcv = df[mask].values.tolist()
+            #
+            # data['最大收益率'], data['最小收益率'], data['最大价格'], data['最小价格'] = self.k_link_profit(
+            #     open_price=data['开仓价格(USDT)'],
+            #     lever=data['杠杆'],
+            #     direction=data["方向"],
+            #     openAmount=str(data['开仓数量']).replace("ETH", ''),
+            #     all_ohlcv=ohlcv
+            # )
 
         return export_data
+    def thread_computer_yield(self, data, all_ohlcv):
+        ohlcv = None
+        for key, value in all_ohlcv.items():
+            df = pandas.DataFrame(value, columns=["时间", "开盘价", "最高价", "最低价", "收盘价", "成交量"])
+            # 时间戳转换为 UTC 时间
+            df["时间"] = pandas.to_datetime(df["时间"], unit="ms")
+            if str(key).split("_")[0] == (str(data['合约']).replace('-', '/')):
+                logger.info(f"查询{data['开仓时间']}~{data['平仓时间']}：{str(data['合约']).replace('-', '/')}K线图数据")
+                mask = df['时间'].between(data['开仓时间'], data['平仓时间'])
+                ohlcv = df[mask].values.tolist()
+
+        data['最大收益率'], data['最小收益率'], data['最大价格'], data['最小价格'] = self.k_link_profit(
+            open_price=data['开仓价格(USDT)'],
+            lever=data['杠杆'],
+            direction=data["方向"],
+            openAmount=str(data['开仓数量']).replace("ETH", ''),
+            all_ohlcv=ohlcv
+        )
+        return data

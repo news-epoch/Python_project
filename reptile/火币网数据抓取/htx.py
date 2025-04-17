@@ -5,6 +5,7 @@ import sys
 import time
 
 import ccxt
+import pandas
 import requests
 import urllib3
 from dateutil.relativedelta import relativedelta
@@ -56,12 +57,12 @@ def time_diff(start_time: str = None, end_time: str = None):
     time_interval = relativedelta(time2, time1)
     return f"{time_interval.days}天{time_interval.hours}小时{time_interval.minutes}分"
 
+
 def computer_rank_rate():
     """
     计算最大收益率
     :return:
     """
-
 
 
 class hbg:
@@ -359,7 +360,8 @@ class hbg:
         today_data = []
 
         while True:
-            temp = self.get_history_order_info(user_sign=user_sign['userSign'], nick_name=user_sign['nickName'], copy_user_num=user_sign['copyUserNum'], page=history_page, page_size=100)
+            temp = self.get_history_order_info(user_sign=user_sign['userSign'], nick_name=user_sign['nickName'],
+                                               copy_user_num=user_sign['copyUserNum'], page=history_page, page_size=100)
             if len(temp) > 0:
                 logger.info(f"获取成功：{user_sign['nickName']}第{history_page}页的{len(temp)}条历史带单数据")
                 history_page += 1
@@ -448,95 +450,147 @@ class hbg:
         return all_ohlcv
 
     def k_link_profit(self,
-                      sign_name,
                       open_price,
                       lever,
                       openAmount,
-                      symbol: str = 'BTC/USDT',
-                      timeframe: str = '1d',
-                      start_time: str = '2023-01-01',
-                      end_time: str = '2023-01-31',
-                      proxie_type: str = 'socks5',
-                      proxies_http_port: str = '10809',
-                      proxies_https_port: str = '10808',
-                      exchange_name: str = 'binance', ):
+                      direction: str = "开多",
+                      all_ohlcv: list=[]
+                      # symbol: str = 'BTC/USDT',
+                      # timeframe: str = '1d',
+                      # start_time: str = '2023-01-01',
+                      # end_time: str = '2023-01-31',
+                      # proxie_type: str = 'socks5',
+                      # proxies_http_port: str = '10809',
+                      # proxies_https_port: str = '10808',
+                      # exchange_name: str = 'binance',
+                      ):
         """
-        :param sign_name:  带单人
         :param open_price:  开仓价格
         :param lever:  杠杆
         :param openAmount: 持仓数量
-        :param proxie_type:
-        :param proxies_http_port:
-        :param proxies_https_port:
-        :param symbol: 虚拟货币类型
-        :param timeframe: 间隔时间
-        :param start_time: 开始时间
-        :param end_time: 结束时间
-        :param exchange_name:  交易所
         :return:
         """
 
-        proxies = {
-            'http': f'{proxie_type}://127.0.0.1:{proxies_http_port}',  # SOCKS5 代理
-            'https': f'{proxie_type}://127.0.0.1:{proxies_https_port}',
-        }
-
-        # exchange = ccxt.binance({
-        #     'proxies': {
-        #         'http': f'{proxie_type}://127.0.0.1:{proxies_http_port}',  # SOCKS5 代理
-        #         'https': f'{proxie_type}://127.0.0.1:{proxies_https_port}',
-        #     }
+        # proxies = {
+        #     'http': f'{proxie_type}://127.0.0.1:{proxies_http_port}',  # SOCKS5 代理
+        #     'https': f'{proxie_type}://127.0.0.1:{proxies_https_port}',
+        # }
+        #
+        # # exchange = ccxt.binance({
+        # #     'proxies': {
+        # #         'http': f'{proxie_type}://127.0.0.1:{proxies_http_port}',  # SOCKS5 代理
+        # #         'https': f'{proxie_type}://127.0.0.1:{proxies_https_port}',
+        # #     }
+        # # })
+        #
+        # # 初始化交易所
+        # logger.info(f"正在初始化交易所：{exchange_name}")
+        # exchange = getattr(ccxt, exchange_name)({
+        #     'enableRateLimit': True,  # 启用请求频率限制
+        #     "proxies": proxies
         # })
+        #
+        # # 将时间转换为毫秒时间戳
+        # since = int(datetime.datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
+        # end_time = int(datetime.datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
+        #
+        # all_ohlcv = []
 
-        # 初始化交易所
-        logger.info(f"正在初始化交易所：{exchange_name}")
-        exchange = getattr(ccxt, exchange_name)({
-            'enableRateLimit': True,  # 启用请求频率限制
-            "proxies": proxies
-        })
+        # while since < end_time:
+        #     try:
+        #         logger.info(f"K线图数据获取数据中.......")
+        #         # 获取数据
+        #         ohlcv = exchange.fetch_ohlcv(symbol, timeframe, since)
+        #         if not ohlcv:
+        #             break  # 无更多数据
+        #         # 提取最后一条数据的时间戳，作为下次请求的起始点
+        #         last_timestamp = ohlcv[-1][0]
+        #         if last_timestamp >= end_time:
+        #             # 过滤超出结束时间的数据
+        #             filtered = [candle for candle in ohlcv if candle[0] < end_time]
+        #             all_ohlcv.extend(filtered)
+        #             break
+        #         else:
+        #             all_ohlcv.extend(ohlcv)
+        #
+        #         # 更新起始时间（避免重复）
+        #         since = last_timestamp + 1  # 加1毫秒
+        #
+        #         # 控制请求频率（根据交易所限制调整）
+        #         time.sleep(exchange.rateLimit / 1000)  # 默认延迟
+        #
+        #     except Exception as e:
+        #         logger.info(f"Error: {e}")
+        #         break
+        # logger.info("K线图数据获取完成")
 
-        # 将时间转换为毫秒时间戳
-        since = int(datetime.datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
-        end_time = int(datetime.datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
-
-        all_ohlcv = []
-
-        while since < end_time:
-            try:
-                logger.info(f"K线图数据获取数据中.......")
-                # 获取数据
-                ohlcv = exchange.fetch_ohlcv(symbol, timeframe, since)
-                if not ohlcv:
-                    break  # 无更多数据
-                # 提取最后一条数据的时间戳，作为下次请求的起始点
-                last_timestamp = ohlcv[-1][0]
-                if last_timestamp >= end_time:
-                    # 过滤超出结束时间的数据
-                    filtered = [candle for candle in ohlcv if candle[0] < end_time]
-                    all_ohlcv.extend(filtered)
-                    break
-                else:
-                    all_ohlcv.extend(ohlcv)
-
-                # 更新起始时间（避免重复）
-                since = last_timestamp + 1  # 加1毫秒
-
-                # 控制请求频率（根据交易所限制调整）
-                time.sleep(exchange.rateLimit / 1000)  # 默认延迟
-
-            except Exception as e:
-                logger.info(f"Error: {e}")
-                break
-        logger.info("K线图数据获取完成")
+        prices = list()
         for i in all_ohlcv:
-
             # max_price = max([float(i[1]), float(i[2]), float([3]), float(i[4])])
             # min_price = min([float(i[1]), float(i[2]), float([3]), float(i[4])])
-            max_price = max(i[1:5])
-            min_price = min(i[1:5])
-
+            # max_price = max(i[1:5])
+            # min_price = min(i[1:5])
+            prices.extend(i[1:5])
             # i.append(f"{round(((float(openAmount) * (float(open_price) - float(max_price))) - (float(openAmount) * (float(open_price) + float(max_price)) * 0.0006))/(float(openAmount) * float(open_price) / int(lever)) * 100, 2)}%")
             # i.append(f"{round(((float(openAmount) * (float(open_price) - float(min_price))) - (float(openAmount) * (float(open_price) + float(min_price)) * 0.0006))/(float(openAmount) * float(open_price) / int(lever)) * 100,2)}%")
-            i.append(f"{round((open_price-max_price)/open_price * lever * 100,2)}%")
-            i.append(f"{round((open_price-min_price)/open_price * lever * 100,2)}%")
-        return all_ohlcv
+            # i.append(f"{round((open_price-max_price)/open_price * lever * 100,2)}%")
+            # i.append(f"{round((open_price-min_price)/open_price * lever * 100,2)}%")
+        max_price = max(prices)
+        min_price = min(prices)
+        if direction == "开空":
+            max_rate_price = f"{round(((float(openAmount) * (float(open_price) - float(min_price))) - (float(openAmount) * (float(open_price) + float(min_price)) * 0.0006)) / (float(openAmount) * float(open_price) / int(lever)) * 100, 2)}%"
+            min_rate_price = f"{round(((float(openAmount) * (float(open_price) - float(max_price))) - (float(openAmount) * (float(open_price) + float(max_price)) * 0.0006)) / (float(openAmount) * float(open_price) / int(lever)) * 100, 2)}%"
+        print(f"开仓价格：{open_price}\n"
+              f"闭仓价格：{1698.46}\n"
+              f"持仓数量：{openAmount}\n"
+              f"杠杆：{lever}\n"
+              f"手续费：{0.0006}\n")
+        价值变化 = float(openAmount) * (float(open_price) - float(1698.46))
+        print(f"价值变化：{价值变化}")
+        总手续费 = float(openAmount) * (float(open_price) + float(1698.46)) * 0.0006
+        print(f"总手续费：{总手续费}")
+        净收益 = 价值变化 - 总手续费
+        print(f"净收益：{净收益}")
+        保证金 = (float(openAmount) * float(open_price)) / 200
+        print(f"保证金：{保证金}")
+        收益率 = f"{(净收益 / 保证金) * 100}%"
+        print(
+            f"验证公式：{round(((float(openAmount) * (float(open_price) - float(1698.46))) - (float(openAmount) * (float(open_price) + float(1698.46)) * 0.0006)) / (float(openAmount) * float(open_price) / int(lever)) * 100, 2)}")
+        print(f"验证公式1：{收益率}")
+        print(f"最大收益率{max_rate_price}")
+        print(f"最小收益率{min_rate_price}")
+        return max_rate_price, min_rate_price
+
+    def comouter_yield(self,
+                       historical_leads_file_path,
+                       start_time,
+                       end_time,
+                       timeframe,
+                       proxie_type,
+                       proxies_http_port,
+                       proxies_https_port,
+                       exchange_name):
+        pd1 = pandas.DataFrame(historical_leads_file_path)
+        k_data_list = dict()
+
+        for i in pd1.index.values:
+            data = pd1.loc[i].to_dict()
+            # 查询K线图数据
+            logger.info(f"查询{data['开仓时间']}~{data['平仓时间']}：{str(data['合约']).replace('-', '/')}K线图数据")
+            if k_data_list.get(str(data['合约']).replace('-', '/')) is None:
+                k_data_list[str(data['合约']).replace('-', '/')] = self.k_link(
+                    proxie_type=proxie_type,
+                    proxies_http_port=proxies_http_port,
+                    proxies_https_port=proxies_https_port,
+                    symbol=str(data['合约']).replace('-', '/'),
+                    timeframe=timeframe,
+                    start_time=start_time,
+                    end_time=end_time,
+                    exchange_name=exchange_name
+                )
+            data['最大收益率'], data['最小收益率'] = self.k_link_profit(
+                open_price=data['开仓价格'],
+                lever=data['杠杆'],
+                openAmount=data['持仓数量'],
+                all_ohlcv=k_data_list.get(str(data['合约']).replace('-', '/'))
+            )

@@ -26,24 +26,24 @@ logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
     hbg = htx.hbg()
+    hbg.k_link()
     test = hbg.k_link_profit(
-        sign_name="八年交易经验",
-        open_price="1863.63",
+        open_price="1817.01",
         lever=200,
-        openAmount="0.11",
-        symbol="ETH/USDT",
-        timeframe="30m",
-        start_time="2025-04-01 02:00:00",
-        end_time="2025-04-06 21:00:00",
-        proxie_type="socks5",
-        proxies_http_port="10809",
-        proxies_https_port="10808",
-        exchange_name="binance"
+        openAmount="0.12",
+        # symbol="ETH/USDT",
+        # timeframe="30m",
+        # start_time="2025-04-01 02:00:00",
+        # end_time="2025-04-06 21:00:00",
+        # proxie_type="socks5",
+        # proxies_http_port="10809",
+        # proxies_https_port="10808",
+        # exchange_name="binance"
     )
 
-    df = pandas.DataFrame(test, columns=["时间", "开盘价", "最高价", "最低价", "收盘价", "成交量", "最小收益率", "最大收益率"])
-    df["时间"] = pandas.to_datetime(df["时间"], unit="ms")
-    df.to_excel("test.xlsx", index=False)
+    # df = pandas.DataFrame(test, columns=["时间", "开盘价", "最高价", "最低价", "收盘价", "成交量", "最小收益率", "最大收益率"])
+    # df["时间"] = pandas.to_datetime(df["时间"], unit="ms")
+    # df.to_excel("test.xlsx", index=False)
     # results = hbg.get_rank()
     # print(results)
     #

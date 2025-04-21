@@ -70,7 +70,7 @@ if __name__ == '__main__':
             # logger.info(future.result())
             history_data.extend(future.result().get("历史带单"))
             today_data.extend(future.result().get("当前带单"))
-    elif application['reptile_type'] ==3:
+    elif application['reptile_type'] == 3:
         ohlcv = hbg.k_link(application['proxies_type'],
                            application['proxies_http_port'],
                            application['proxies_https_port'],
@@ -79,7 +79,7 @@ if __name__ == '__main__':
                            application['start_time'],
                            application['end_time'],
                            application['exchange_name'])
-    elif application['reptile_type'] ==4:
+    elif application['reptile_type'] == 4:
         data = hbg.comouter_yield(
             historical_leads_file_path=application['compute_yield']['historical_leads_file_path'],
             start_time=application['compute_yield']['start_time'],

@@ -482,8 +482,12 @@ class hbg:
             # i.append(f"{round((open_price-min_price)/open_price * lever * 100,2)}%")
         if len(prices) == 0:
             return "0%", "0%", 0, 0
-        max_price = max(prices)
-        min_price = min(prices)
+        # max_price = max(prices)
+        # min_price = min(prices)
+
+        max_price = 1698.46
+
+        min_price = 1698.46
 
         logger.info(f"开仓价格：{open_price}\n"
                     f"闭仓价格：{min_price}\n"
@@ -520,16 +524,17 @@ class hbg:
             logger.info("==============================================\n")
         elif direction == "开多":
             logger.info(f"=====================开多=========================")
-            max_rate_price = round(((float(openAmount) * (float(min_price) - float(open_price))) - (
+
+            min_rate_price = round(((float(openAmount) * (float(min_price) - float(open_price))) - (
                     float(openAmount) * (float(open_price) + float(min_price)) * 0.0006)) / (
                                            float(openAmount) * float(open_price) / int(lever)) * 100, 2)
-            min_rate_price = round(((float(openAmount) * (float(max_price) - float(open_price))) - (
+            max_rate_price = round(((float(openAmount) * (float(max_price) - float(open_price))) - (
                     float(openAmount) * (float(open_price) + float(max_price)) * 0.0006)) / (
                                            float(openAmount) * float(open_price) / int(lever)) * 100, 2)
-            logger.info(f"最大收益率：{-max_rate_price}%")
-            logger.info(f"最小收益率：{-min_rate_price}%")
-            max_rate_price = f"{-max_rate_price}%"
-            min_rate_price = f"{-min_rate_price}%"
+            logger.info(f"最大收益率：{max_rate_price}%")
+            logger.info(f"最小收益率：{min_rate_price}%")
+            max_rate_price = f"{max_rate_price}%"
+            min_rate_price = f"{min_rate_price}%"
             logger.info("==============================================\n")
 
         # print(

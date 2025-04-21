@@ -25,12 +25,7 @@ compute_yield:
   start_time: ""
   end_time: ""
   timeframe: "30m"     # 间隔时间 1天=1d、1分钟=1m、1秒钟=1s、1周=1w
-  max_workers: 5    # 值的越大，程序执行越快，出问题的概率越大。
-
-
-
-
-
+  max_workers: 5    # 值的越大，程序执行越快，出问题的概率越大。建议设置 1-5之间
 
 
 logging:

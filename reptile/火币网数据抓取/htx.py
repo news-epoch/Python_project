@@ -551,7 +551,7 @@ class hbg:
                        proxies_http_port,
                        proxies_https_port,
                        exchange_name,
-                       max_workers :int=5):
+                       max_workers :int = 5):
 
         pd1 = pandas.read_excel(historical_leads_file_path)
 

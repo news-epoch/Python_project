@@ -51,7 +51,6 @@ if __name__ == '__main__':
         #     today_data.extend(result.get("当前带单"))
     elif application['reptile_type'] == 2:
         user_signs = []
-
         page = 1
         while True:
             results = hbg.get_rank(page)
@@ -70,6 +69,10 @@ if __name__ == '__main__':
             # logger.info(future.result())
             history_data.extend(future.result().get("历史带单"))
             today_data.extend(future.result().get("当前带单"))
+
+        df1 = pandas.DataFrame(history_data)
+        df1.to_excel(now_time + "历史带单数据.xlsx", index=False)
+        pandas.DataFrame(today_data).to_excel(now_time + "当前带单数据.xlsx", index=False)
     elif application['reptile_type'] == 3:
         ohlcv = hbg.k_link(application['proxies_type'],
                            application['proxies_http_port'],
@@ -79,6 +82,11 @@ if __name__ == '__main__':
                            application['start_time'],
                            application['end_time'],
                            application['exchange_name'])
+        if ohlcv != None:
+            df = pandas.DataFrame(ohlcv, columns=["时间", "开盘价", "最高价", "最低价", "收盘价", "成交量"])
+            # 时间戳转换为 UTC 时间
+            df["时间"] = pandas.to_datetime(df["时间"], unit="ms")
+            df.to_excel(f"{application['start_time']}-{application['end_time']}_{str(application['symbol']).replace('/', '_')}_{application['timeframe']}_K线图.xlsx", index=False)
     elif application['reptile_type'] == 4:
         data = hbg.comouter_yield(
             historical_leads_file_path=application['compute_yield']['historical_leads_file_path'],
@@ -93,14 +101,3 @@ if __name__ == '__main__':
         )
         pd = pandas.DataFrame(data)
         pd.to_excel(str(application['compute_yield']['historical_leads_file_path']).replace(".xlsx", "（计算收益版）.xlsx"), index=False)
-
-
-    if ohlcv !=None:
-        df = pandas.DataFrame(ohlcv, columns=["时间", "开盘价", "最高价", "最低价", "收盘价", "成交量"])
-        # 时间戳转换为 UTC 时间
-        df["时间"] = pandas.to_datetime(df["时间"], unit="ms")
-        df.to_excel(f"{application['start_time']}-{application['end_time']}_{str(application['symbol']).replace('/', '_')}_{application['timeframe']}_K线图.xlsx",index=False)
-    else:
-        df1 = pandas.DataFrame(history_data)
-        df1.to_excel(now_time + "历史带单数据.xlsx", index=False)
-        pandas.DataFrame(today_data).to_excel(now_time + "当前带单数据.xlsx", index=False)

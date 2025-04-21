@@ -88,7 +88,8 @@ if __name__ == '__main__':
             proxie_type=application['proxies_type'],
             proxies_http_port=application['proxies_http_port'],
             proxies_https_port=application['proxies_https_port'],
-            exchange_name=application['exchange_name']
+            exchange_name=application['exchange_name'],
+            max_workers=application['compute_yield']['max_workers']
         )
         pd = pandas.DataFrame(data)
         pd.to_excel(str(application['compute_yield']['historical_leads_file_path']).replace(".xlsx", "（计算收益版）.xlsx"), index=False)

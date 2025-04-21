@@ -482,12 +482,12 @@ class hbg:
             # i.append(f"{round((open_price-min_price)/open_price * lever * 100,2)}%")
         if len(prices) == 0:
             return "0%", "0%", 0, 0
-        # max_price = max(prices)
-        # min_price = min(prices)
+        max_price = max(prices)
+        min_price = min(prices)
 
-        max_price = 1698.46
-
-        min_price = 1698.46
+        # max_price = 1698.46
+        #
+        # min_price = 1698.46
 
         logger.info(f"开仓价格：{open_price}\n"
                     f"闭仓价格：{min_price}\n"
@@ -550,7 +550,8 @@ class hbg:
                        proxie_type,
                        proxies_http_port,
                        proxies_https_port,
-                       exchange_name):
+                       exchange_name,
+                       max_workers :int=5):
 
         pd1 = pandas.read_excel(historical_leads_file_path)
 
@@ -567,7 +568,7 @@ class hbg:
                             datetime.datetime.strptime(str(min(time2.get(key))),"%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S") + "_" +
                             datetime.datetime.strptime(str(max(time2.get(key))),"%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S"))
         print(keys)
-        with ThreadPoolExecutor(max_workers=5) as executor:
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
             for key in keys:
                 logger.info(f"提交任务{key}")
                 k_data_list[key] = executor.submit(self.k_link,

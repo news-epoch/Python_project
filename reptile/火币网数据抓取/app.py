@@ -53,6 +53,7 @@ if __name__ == '__main__':
         user_signs = []
         page = 1
         while True:
+            logging.info(f"爬取{page}页")
             results = hbg.get_rank(page)
             page += 1
             if len(results['data']['itemList']) == 0:
@@ -61,6 +62,7 @@ if __name__ == '__main__':
                 user_signs.append({'userSign': result['userSign'],
                                    'nickName': result['nickName'],
                                    'copyUserNum': f"{result['copyUserNum']}/{result['fullUserNum']}"})
+        logger.info(f"当前获取带单人数{len(user_signs)}")
         thread_pool = ThreadPoolExecutor(max_workers=application['max_workers'])
         futures = [thread_pool.submit(hbg.startup, user_sign) for user_sign in user_signs]
 
@@ -88,8 +90,30 @@ if __name__ == '__main__':
             df["时间"] = pandas.to_datetime(df["时间"], unit="ms")
             df.to_excel(f"{application['start_time']}-{application['end_time']}_{str(application['symbol']).replace('/', '_')}_{application['timeframe']}_K线图.xlsx", index=False)
     elif application['reptile_type'] == 4:
+        user_signs = []
+        page = 1
+        while True:
+            results = hbg.get_rank(page)
+            page += 1
+            if len(results['data']['itemList']) == 0:
+                break
+            for result in results['data']['itemList']:
+                user_signs.append({'userSign': result['userSign'],
+                                   'nickName': result['nickName'],
+                                   'copyUserNum': f"{result['copyUserNum']}/{result['fullUserNum']}"})
+        thread_pool = ThreadPoolExecutor(max_workers=application['max_workers'])
+        futures = [thread_pool.submit(hbg.startup, user_sign) for user_sign in user_signs]
+
+        concurrent.futures.wait(futures)
+        for future in futures:
+            # logger.info(future.result())
+            history_data.extend(future.result().get("历史带单"))
+            today_data.extend(future.result().get("当前带单"))
+
+        df1 = pandas.DataFrame(history_data)
+        df1.to_excel(now_time + "历史带单数据.xlsx", index=False)
         data = hbg.comouter_yield(
-            historical_leads_file_path=application['compute_yield']['historical_leads_file_path'],
+            historical_leads=df1,
             start_time=application['compute_yield']['start_time'],
             end_time=application['compute_yield']['end_time'],
             timeframe=application['compute_yield']['timeframe'],

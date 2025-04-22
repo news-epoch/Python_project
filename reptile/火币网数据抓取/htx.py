@@ -543,7 +543,7 @@ class hbg:
         return max_rate_price, min_rate_price, max_price, min_price
 
     def comouter_yield(self,
-                       historical_leads_file_path,
+                       historical_leads,
                        start_time,
                        end_time,
                        timeframe,
@@ -553,7 +553,7 @@ class hbg:
                        exchange_name,
                        max_workers :int = 5):
 
-        pd1 = pandas.read_excel(historical_leads_file_path)
+        pd1 = historical_leads
 
         k_data_list = dict()
         export_data = list()

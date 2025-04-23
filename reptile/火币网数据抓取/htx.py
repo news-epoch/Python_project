@@ -275,37 +275,41 @@ class hbg:
             "referer": "https://futures.htx.com.de/zh-cn/futures/copy_trading/following/trader/" + user_sign,
             # "sec-ch-ua:": '"Google Chrome";v="135", "Not-A.Brand";v="8", "Chromium";v="135"'
         }
-        response = requests.session().get(url=url, params=params, headers=headers, verify=False)
-        if response.status_code == requests.codes.ok:
-            result = response.json()
-            if len(result['data']['orders']) > 0:
-                for order in result['data']['orders']:
-                    history_data.append({
-                        "用户名": nick_name,
-                        "合约": order['symbol'],
-                        "方向": f"{direction.get(order['direction'])}",
-                        "杠杆": f"{order['lever']}",
-                        "开仓价格(USDT)": f"{order['openPrice']}",
-                        "平仓价格(USDT)": order['closePrice'],
-                        "收益率(%)": f"{round(float(order['profitRate']) * 100, 3)}%",
-                        "止盈价格(USDT)": order['profitPrice'],
-                        "平仓方式": close_type_map.get(order['closeType']) if close_type_map.get(
-                            order['closeType']) is not None else order['closeType'],
-                        "开仓时间": datetime.datetime.utcfromtimestamp(order['openTime'] / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"),
-                        "平仓时间": datetime.datetime.utcfromtimestamp(order['closeTime'] / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"),
-                        "持仓时间": time_diff(datetime.datetime.utcfromtimestamp(order['closeTime'] / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"),
-                            datetime.datetime.utcfromtimestamp(order['openTime'] / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S")),
-                        "当前跟单人数": copy_user_num,
-                        "开仓数量": f"{order['openAmount']}ETH",
-                        "收益额(USDT)": f"{order['profit']}",
-                        "带单分成(USDT)": order['followTakes'],
-                        "跟单人数": order['followerCounts'],
-                        "开仓手续费(USDT)": order['openFee'],
-                        "平仓手续费(USDT)": order['closeFee'],
-                    })
+        for i in range(1, 6):
+            try:
+                response = requests.session().get(url=url, params=params, headers=headers, verify=False)
+                if response.status_code == requests.codes.ok:
+                    result = response.json()
+                    if len(result['data']['orders']) > 0:
+                        for order in result['data']['orders']:
+                            history_data.append({
+                                "用户名": nick_name,
+                                "合约": order['symbol'],
+                                "方向": f"{direction.get(order['direction'])}",
+                                "杠杆": f"{order['lever']}",
+                                "开仓价格(USDT)": f"{order['openPrice']}",
+                                "平仓价格(USDT)": order['closePrice'],
+                                "收益率(%)": f"{round(float(order['profitRate']) * 100, 3)}%",
+                                "止盈价格(USDT)": order['profitPrice'],
+                                "平仓方式": close_type_map.get(order['closeType']) if close_type_map.get(
+                                    order['closeType']) is not None else order['closeType'],
+                                "开仓时间": datetime.datetime.utcfromtimestamp(order['openTime'] / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"),
+                                "平仓时间": datetime.datetime.utcfromtimestamp(order['closeTime'] / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"),
+                                "持仓时间": time_diff(datetime.datetime.utcfromtimestamp(order['closeTime'] / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"),
+                                    datetime.datetime.utcfromtimestamp(order['openTime'] / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S")),
+                                "当前跟单人数": copy_user_num,
+                                "开仓数量": f"{order['openAmount']}ETH",
+                                "收益额(USDT)": f"{order['profit']}",
+                                "带单分成(USDT)": order['followTakes'],
+                                "跟单人数": order['followerCounts'],
+                                "开仓手续费(USDT)": order['openFee'],
+                                "平仓手续费(USDT)": order['closeFee'],
+                            })
+                    return history_data
+            except Exception as e:
+                logger.error(f"获取历史数据异常：{e}")
 
         return history_data
-
     def get_today_order_info(self, user_sign: str = None, nick_name: str = None, copy_user_num: str = None,
                              page: int = 1, page_size: int = 20):
 
@@ -543,7 +547,7 @@ class hbg:
         return max_rate_price, min_rate_price, max_price, min_price
 
     def comouter_yield(self,
-                       historical_leads,
+                       historical_leads_file_path,
                        start_time,
                        end_time,
                        timeframe,
@@ -553,7 +557,7 @@ class hbg:
                        exchange_name,
                        max_workers :int = 5):
 
-        pd1 = historical_leads
+        pd1 = pandas.read_excel(historical_leads_file_path)
 
         k_data_list = dict()
         export_data = list()

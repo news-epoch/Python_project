@@ -21,11 +21,11 @@ end_time: "2025-04-06"        # 结束时间
 
 # 当replite_type = 4 时
 compute_yield:
-#  historical_leads_file_path: "C:\\Users\\Administrator\\Documents\\Code\\Python_project\\reptile\\火币网数据抓取\\2025042111历史带单数据.xlsx"
+  historical_leads_file_path: "D:\\code\\python\\Python_project\\reptile\\火币网数据抓取\\2025042223历史带单数据.xlsx"
   start_time: ""
   end_time: ""
-  timeframe: "30m"     # 间隔时间 1天=1d、1分钟=1m、1秒钟=1s、1周=1w
-  max_workers: 5    # 值的越大，程序执行越快，出问题的概率越大。建议设置 1-5之间
+  timeframe: "1m"     # 间隔时间 1天=1d、1分钟=1m、1秒钟=1s、1周=1w
+  max_workers: 1    # 值的越大，程序执行越快，出问题的概率越大。建议设置 1-5之间
 
 
 logging:
@@ -41,7 +41,7 @@ logging:
       formatter: simple
     file:
       class: logging.handlers.TimedRotatingFileHandler
-      filename: C:\\Users\\Administrator\\Documents\\Code\\Python_project\\reptile\\火币网数据抓取\\logs\\app.log
+      filename: D:\\code\\python\\Python_project\\reptile\\火币网数据抓取\\logs\\app.log
       level: INFO
       formatter: simple
       encoding: UTF-8

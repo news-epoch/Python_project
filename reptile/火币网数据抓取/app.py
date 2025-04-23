@@ -56,8 +56,11 @@ if __name__ == '__main__':
             logging.info(f"爬取{page}页")
             results = hbg.get_rank(page)
             page += 1
-            if len(results['data']['itemList']) == 0:
-                break
+            try:
+                if len(results['data']['itemList']) == 0:
+                    break
+            except Exception as e:
+                continue
             for result in results['data']['itemList']:
                 user_signs.append({'userSign': result['userSign'],
                                    'nickName': result['nickName'],

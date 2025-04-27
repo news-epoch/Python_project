@@ -2,7 +2,7 @@
 rank_type: "综合排名"
 max_workers: 12
 # 1 是慢抓取， 2 是快速抓取， 3 获取k线图，用 2 和 3
-reptile_type: 4
+reptile_type: 3
 
 
 proxies_type: 'socks5'     # 代理类型
@@ -12,9 +12,9 @@ exchange_name: "binance"    #
 
 # 当replite_type = 3 时
 symbol: "ETH/USDT"    # 分类
-timeframe: "5m"     # 间隔时间 1天=1d、1分钟=1m、1秒钟=1s、1周=1w
-start_time: "2025-03-12"     # 开始时间
-end_time: "2025-04-06"        # 结束时间
+timeframe: "1s"     # 间隔时间 1天=1d、1分钟=1m、1秒钟=1s、1周=1w
+start_time: "2025-04-01 00:00:00"     # 开始时间
+end_time: "2025-04-06 00:00:00"        # 结束时间
 #limit: 100     # 条数
 
 
@@ -41,7 +41,7 @@ logging:
       formatter: simple
     file:
       class: logging.handlers.TimedRotatingFileHandler
-      filename: D:\\code\\python\\Python_project\\reptile\\火币网数据抓取\\logs\\app.log
+      filename: logs/app.log
       level: INFO
       formatter: simple
       encoding: UTF-8

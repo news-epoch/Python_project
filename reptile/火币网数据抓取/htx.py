@@ -1,6 +1,7 @@
 import datetime
 import logging
 import os
+import sqlite3
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -11,7 +12,11 @@ import pandas
 import requests
 import urllib3
 from dateutil.relativedelta import relativedelta
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
 from urllib3.exceptions import InsecureRequestWarning
+
+import model
 
 urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -67,10 +72,36 @@ def computer_rank_rate():
     """
 
 
+def createSession(BASE_DIR):
+    db_config = {
+        # "pool_size": "10",
+        "echo": True,
+        # "pool_pre_ping": True,
+        # 'max_overflow': "20"
+    }
+
+    for i in range(0, 3):
+        try:
+            sqlite3.connect(BASE_DIR)
+            # self.conn = create_engine(url=mysql_url, encoding='utf-8', echo=True, pool_size=8)
+            conn = create_engine(url='sqlite:///' + BASE_DIR, **db_config)
+
+            # print(f'连接信息：{self.conn}')
+            # session = sessionmaker(bind=conn)()
+            return conn
+        except Exception as e:
+            print(e)
+
+
+def threadInseart(k, session):
+    session.add(k)
+    session.commit()
+
 class hbg:
     def __init__(self, rank_type: str = "综合排名"):
         self.rank_type = rank_type
         self.BASE_DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
+
 
     def get_rank(self, page):
         params = {
@@ -247,11 +278,6 @@ class hbg:
         chromebro.close()
         return {"历史带单": history_data, "当前带单": today_data}
 
-    def download_driver(self):
-        # 自动下载与Chrome版本匹配的Chromedriver
-        driver_path = ChromeDriverManager().install()
-        logger.info(driver_path)
-        # driver = webdriver.Chrome(service=Service(driver_path))
 
     def get_history_order_info(self, user_sign: str = None, nick_name: str = None, copy_user_num: str = None,
                                page: int = 1, page_size: int = 20):
@@ -400,7 +426,9 @@ class hbg:
             'http': f'{proxie_type}://127.0.0.1:{proxies_http_port}',  # SOCKS5 代理
             'https': f'{proxie_type}://127.0.0.1:{proxies_https_port}',
         }
-
+        session = sessionmaker(bind=createSession(os.path.join(self.BASE_DIR, "sqlite\\huobi.db")))()
+        # result = session.execute(f"select * from k_link where type = '{timeframe}' and time between '{start_time}' and '{end_time}'").fetchall()[0]
+        result = "存在间隔非1秒的数据"
         # exchange = ccxt.binance({
         #     'proxies': {
         #         'http': f'{proxie_type}://127.0.0.1:{proxies_http_port}',  # SOCKS5 代理
@@ -409,56 +437,70 @@ class hbg:
         # })
 
         # 初始化交易所
-        logger.info(f"正在初始化交易所：{exchange_name}")
-        exchange = getattr(ccxt, exchange_name)({
-            'enableRateLimit': True,  # 启用请求频率限制
-            "proxies": proxies
-        })
+        if result == "存在间隔非1秒的数据":
 
-        # 将时间转换为毫秒时间戳
-        since = int(datetime.datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
-        end_time = int(datetime.datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
+            logger.info(f"正在初始化交易所：{exchange_name}")
+            exchange = getattr(ccxt, exchange_name)({
+                'enableRateLimit': True,  # 启用请求频率限制
+                "proxies": proxies
+            })
 
-        all_ohlcv = []
+            # 将时间转换为毫秒时间戳
+            since = int(datetime.datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
+            end_time = int(datetime.datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
 
-        while since < end_time:
-            try:
-                logger.info(f"{symbol} K线图数据获取数据中.......")
-                ohlcv = None
-                # 获取数据
-                for i in range(1, 10):
-                    try:
-                        ohlcv = exchange.fetch_ohlcv(symbol, timeframe, since)
+            all_ohlcv = []
+
+            while since < end_time:
+                try:
+                    logger.info(f"{symbol} K线图数据获取数据中.......")
+                    ohlcv = None
+                    # 获取数据
+                    for i in range(1, 10):
+                        try:
+                            ohlcv = exchange.fetch_ohlcv(symbol, timeframe, since)
+
+                            break
+                        except Exception as e:
+                            logger.error(f"Error: {e}，重试10次")
+                            time.sleep(10)
+                            continue
+
+                    if not ohlcv:
+                        break  # 无更多数据
+                    # 提取最后一条数据的时间戳，作为下次请求的起始点
+                    last_timestamp = ohlcv[-1][0]
+                    if last_timestamp >= end_time:
+                        # 过滤超出结束时间的数据
+                        filtered = [candle for candle in ohlcv if candle[0] < end_time]
+                        all_ohlcv.extend(filtered)
                         break
-                    except Exception as e:
-                        logger.error(f"Error: {e}，重试10次")
-                        time.sleep(10)
-                        continue
+                    else:
+                        all_ohlcv.extend(ohlcv)
 
-                if not ohlcv:
-                    break  # 无更多数据
-                # 提取最后一条数据的时间戳，作为下次请求的起始点
-                last_timestamp = ohlcv[-1][0]
-                if last_timestamp >= end_time:
-                    # 过滤超出结束时间的数据
-                    filtered = [candle for candle in ohlcv if candle[0] < end_time]
-                    all_ohlcv.extend(filtered)
+                    # 更新起始时间（避免重复）
+                    since = last_timestamp + 1  # 加1毫秒
+
+                    # 控制请求频率（根据交易所限制调整）
+                    time.sleep(exchange.rateLimit / 500)  # 默认延迟
+
+                except Exception as e:
+                    logger.error(f"Error: {e}")
                     break
-                else:
-                    all_ohlcv.extend(ohlcv)
+            logger.info("K线图数据获取完成")
+            for oh in all_ohlcv:
+                with ThreadPoolExecutor(max_workers=50) as executor:
+                    k = model.k_link()
+                    k.type = timeframe
+                    k.time = oh[0]
+                    k.openPrice = oh[1]
+                    k.maxPrice = oh[2]
+                    k.minPrice = oh[3]
+                    k.closePrice = oh[4]
+                    k.dealCount = oh[5]
+                    executor.submit(threadInseart, k, session)
 
-                # 更新起始时间（避免重复）
-                since = last_timestamp + 1  # 加1毫秒
-
-                # 控制请求频率（根据交易所限制调整）
-                time.sleep(exchange.rateLimit / 500)  # 默认延迟
-
-            except Exception as e:
-                logger.error(f"Error: {e}")
-                break
-        logger.info("K线图数据获取完成")
-
-        return all_ohlcv
+            return all_ohlcv
 
     def k_link_profit(self,
                       open_price,
@@ -622,7 +664,8 @@ class hbg:
         for key, value in all_ohlcv.items():
             df = pandas.DataFrame(value, columns=["时间", "开盘价", "最高价", "最低价", "收盘价", "成交量"])
             # 时间戳转换为 UTC 时间
-            df["时间"] = pandas.to_datetime(df["时间"], unit="ms")
+            df["时间"] = pandas.to_datetime(df["时间"], unit="ms").dt.tz_convert('Asia/Shanghai')
+
             if str(key).split("_")[0] == (str(data['合约']).replace('-', '/')):
                 logger.info(f"查询{data['开仓时间']}~{data['平仓时间']}：{str(data['合约']).replace('-', '/')}K线图数据")
                 mask = df['时间'].between(data['开仓时间'], data['平仓时间'])

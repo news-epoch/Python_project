@@ -90,10 +90,10 @@ if __name__ == '__main__':
         if ohlcv != None:
             df = pandas.DataFrame(ohlcv, columns=["时间", "开盘价", "最高价", "最低价", "收盘价", "成交量"])
             # 时间戳转换为 UTC 时间
-            df["时间"] = pandas.to_datetime(df["时间"], unit="ms")
-            df.to_excel(f"{application['start_time']}-{application['end_time']}_{str(application['symbol']).replace('/', '_')}_{application['timeframe']}_K线图.xlsx", index=False)
-    elif application['reptile_type'] == 4:
+            df["时间"] = pandas.to_datetime(df["时间"], unit="ms").dt.tz_convert('Asia/Shanghai')
+            df.to_excel(f"_{str(application['symbol']).replace('/', '_')}_{application['timeframe']}_K线图.xlsx", index=False)
 
+    elif application['reptile_type'] == 4:
         data = hbg.comouter_yield(
             historical_leads_file_path=application['compute_yield']['historical_leads_file_path'],
             start_time=application['compute_yield']['start_time'],

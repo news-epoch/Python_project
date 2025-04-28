@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 from os import system
 
 import pandas
+import pytz
 
 import htx
 # 基础配置（只需在程序入口配置一次）
@@ -90,7 +91,9 @@ if __name__ == '__main__':
         if ohlcv != None:
             df = pandas.DataFrame(ohlcv, columns=["时间", "开盘价", "最高价", "最低价", "收盘价", "成交量"])
             # 时间戳转换为 UTC 时间
-            df["时间"] = pandas.to_datetime(df["时间"], unit="ms").dt.tz_convert('Asia/Shanghai')
+            # beijing_tz = pytz.timezone()
+            df["转换时间"] = pandas.to_datetime(df["时间"], unit="ms").dt.tz_localize('UTC').dt.tz_convert('Asia/Shanghai').dt.tz_localize(None)
+            # df["时间"] = pandas.to_datetime(df["时间"], unit="ms").dt.tz_convert('Asia/Shanghai')
             df.to_excel(f"_{str(application['symbol']).replace('/', '_')}_{application['timeframe']}_K线图.xlsx", index=False)
 
     elif application['reptile_type'] == 4:

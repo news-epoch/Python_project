@@ -26,3 +26,6 @@ class k_link(ModelBase):
 
     # 成交量
     dealCount = Column(Integer)
+
+    # 所属币
+    symbol = Column(String)

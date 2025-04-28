@@ -9,10 +9,11 @@ from zoneinfo import ZoneInfo
 
 import ccxt
 import pandas
+import pytz
 import requests
 import urllib3
 from dateutil.relativedelta import relativedelta
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 from urllib3.exceptions import InsecureRequestWarning
 
@@ -426,9 +427,24 @@ class hbg:
             'http': f'{proxie_type}://127.0.0.1:{proxies_http_port}',  # SOCKS5 代理
             'https': f'{proxie_type}://127.0.0.1:{proxies_https_port}',
         }
+        # 将时间转换为毫秒时间戳
+        since = int(datetime.datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
+        end_time = int(datetime.datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
+
         session = sessionmaker(bind=createSession(os.path.join(self.BASE_DIR, "sqlite\\huobi.db")))()
-        # result = session.execute(f"select * from k_link where type = '{timeframe}' and time between '{start_time}' and '{end_time}'").fetchall()[0]
-        result = "存在间隔非1秒的数据"
+        tf = 1
+        if timeframe.__contains__("s"):
+            tf = int(timeframe.replace("s", ""))
+        elif timeframe.__contains__("m"):
+            tf = int(timeframe.replace("s", "")) * 60
+        elif timeframe.__contains__("h"):
+            tf = int(timeframe.replace("s", "")) * 60 * 60
+        elif timeframe.__contains__("d"):
+            tf = int(timeframe.replace("d", "")) * 60 * 60 * 24
+
+        sql = f"SELECT CASE WHEN total_records = (({end_time}/1000 - {since}/1000)/{tf} + 1) THEN '记录数与时间跨度匹配' ELSE '记录数不匹配（应有 ' || (({end_time}/1000 - {since}/1000)/{tf} + 1) || ' 条，实际 ' || total_records || ' 条）' END AS check_result FROM (SELECT COUNT(*) AS total_records FROM k_link WHERE type='{timeframe}' and symbol = '{symbol}' and time BETWEEN {since} AND {end_time});"
+        result = session.execute(text(sql)).fetchall()[0]
+        # result = "记录数与时间跨度匹配"
         # exchange = ccxt.binance({
         #     'proxies': {
         #         'http': f'{proxie_type}://127.0.0.1:{proxies_http_port}',  # SOCKS5 代理
@@ -437,7 +453,7 @@ class hbg:
         # })
 
         # 初始化交易所
-        if result == "存在间隔非1秒的数据":
+        if result != "记录数与时间跨度匹配":
 
             logger.info(f"正在初始化交易所：{exchange_name}")
             exchange = getattr(ccxt, exchange_name)({
@@ -445,9 +461,7 @@ class hbg:
                 "proxies": proxies
             })
 
-            # 将时间转换为毫秒时间戳
-            since = int(datetime.datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
-            end_time = int(datetime.datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
+
 
             all_ohlcv = []
 
@@ -498,10 +512,12 @@ class hbg:
                     k.minPrice = oh[3]
                     k.closePrice = oh[4]
                     k.dealCount = oh[5]
+                    k.symbol = symbol
                     executor.submit(threadInseart, k, session)
 
             return all_ohlcv
-
+        else:
+            return session.execute(text(f"select time,openPrice,maxPrice,minPrice, closePrice,dealCount FROM k_link WHERE type='{timeframe}' and symbol = '{symbol}' and time BETWEEN {start_time} AND {end_time};")).fetchall()
     def k_link_profit(self,
                       open_price,
                       lever,
@@ -517,15 +533,8 @@ class hbg:
         """
         prices = list()
         for i in all_ohlcv:
-            # max_price = max([float(i[1]), float(i[2]), float([3]), float(i[4])])
-            # min_price = min([float(i[1]), float(i[2]), float([3]), float(i[4])])
-            # max_price = max(i[1:5])
-            # min_price = min(i[1:5])
             prices.extend(i[1:5])
-            # i.append(f"{round(((float(openAmount) * (float(open_price) - float(max_price))) - (float(openAmount) * (float(open_price) + float(max_price)) * 0.0006))/(float(openAmount) * float(open_price) / int(lever)) * 100, 2)}%")
-            # i.append(f"{round(((float(openAmount) * (float(open_price) - float(min_price))) - (float(openAmount) * (float(open_price) + float(min_price)) * 0.0006))/(float(openAmount) * float(open_price) / int(lever)) * 100,2)}%")
-            # i.append(f"{round((open_price-max_price)/open_price * lever * 100,2)}%")
-            # i.append(f"{round((open_price-min_price)/open_price * lever * 100,2)}%")
+
         if len(prices) == 0:
             return "0%", "0%", 0, 0
         max_price = max(prices)
@@ -597,7 +606,7 @@ class hbg:
                        proxies_http_port,
                        proxies_https_port,
                        exchange_name,
-                       max_workers :int = 5):
+                       max_workers: int = 5):
 
         pd1 = pandas.read_excel(historical_leads_file_path)
 
@@ -662,9 +671,14 @@ class hbg:
     def thread_computer_yield(self, data, all_ohlcv):
         ohlcv = None
         for key, value in all_ohlcv.items():
+            if value is []:
+                continue
+            logger.info(f"获取{key}的数据")
             df = pandas.DataFrame(value, columns=["时间", "开盘价", "最高价", "最低价", "收盘价", "成交量"])
             # 时间戳转换为 UTC 时间
-            df["时间"] = pandas.to_datetime(df["时间"], unit="ms").dt.tz_convert('Asia/Shanghai')
+            # logger.info(df["时间"])
+            df["时间"] = pandas.to_datetime(df["时间"], unit="ms").dt.tz_localize('UTC').dt.tz_convert(
+                'Asia/Shanghai').dt.tz_localize(None)
 
             if str(key).split("_")[0] == (str(data['合约']).replace('-', '/')):
                 logger.info(f"查询{data['开仓时间']}~{data['平仓时间']}：{str(data['合约']).replace('-', '/')}K线图数据")

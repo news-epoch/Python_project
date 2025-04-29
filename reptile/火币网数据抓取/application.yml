@@ -24,7 +24,7 @@ compute_yield:
   historical_leads_file_path: "C:\\Users\\Administrator\\Documents\\Code\\Python_project\\reptile\\火币网数据抓取\\2025042819历史带单数据.xlsx"
   start_time: ""
   end_time: ""
-  timeframe: "1d"     # 间隔时间 1天=1d、1分钟=1m、1秒钟=1s、1周=1w
+  timeframe: "1s"     # 间隔时间 1天=1d、1分钟=1m、1秒钟=1s、1周=1w
   max_workers: 5    # 值的越大，程序执行越快，出问题的概率越大。建议设置 1-5之间
 
 

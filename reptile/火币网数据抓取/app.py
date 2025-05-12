@@ -41,13 +41,11 @@ if __name__ == '__main__':
         logger.info(f"当前获取带单人数{len(user_signs)}")
         thread_pool = ThreadPoolExecutor(max_workers=application['max_workers'])
         futures = [thread_pool.submit(hbg.startup, user_sign) for user_sign in user_signs]
-
         concurrent.futures.wait(futures)
         for future in futures:
             # logger.info(future.result())
             history_data.extend(future.result().get("历史带单"))
             today_data.extend(future.result().get("当前带单"))
-
         df1 = pandas.DataFrame(history_data,
                                columns=["id", "用户名", "合约", "方向", "杠杆", "开仓价格(USDT)", "平仓价格(USDT)", "收益率(%)",
                                         "止盈价格(USDT)", "平仓方式", "开仓时间", "平仓时间", "持仓时间", "当前跟单人数", "开仓数量", "收益额(USDT)",

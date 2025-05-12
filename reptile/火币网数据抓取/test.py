@@ -1,11 +1,12 @@
 import datetime
 import os
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 from sqlalchemy import text
 from sqlalchemy.orm import sessionmaker
 
-from htx import createSession
+from htx import createSession, threadInseartSql
 
 if __name__ == '__main__':
     # t = 1743436800000
@@ -20,9 +21,12 @@ if __name__ == '__main__':
     # sql = "INSERT INTO 'trading_records' ('id', 'username', 'contract', 'direction', 'leverage', 'open_price', 'close_price', 'yield_rate', 'take_profit_price', 'close_method', 'open_time', 'close_time', 'duration', 'current_followers', 'position_size', 'profit', 'commission_fee', 'total_followers', 'open_fee', 'close_fee') VALUES (1, '1', '1', '1', 1, 1, 1, 1, 1, '1', 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);"
     session = sessionmaker(bind=createSession(".\sqlite\\huobi.db"))()
     sql = "select * from k_link"
-    try:
-        print(session.execute(text(sql)).fetchall())
-    except Exception as e:
-        print("异常："+e.__str__())
 
+    # future = ThreadPoolExecutor.submit(threadInseartSql, sql, session)
+    print(session.execute(text(f"select count(*) from trading_records")).fetchall())
+    # try:
+        # ThreadPoolExecutor.submit(session.execute, text(sql))
+    # except Exception as e:
+    #     print("异常："+e.__str__())
+    print(int(datetime.datetime.strptime('2025-04-30 17:13:00', '%Y-%m-%d %H:%M:%S').timestamp() * 1000))
     # print(data[0])

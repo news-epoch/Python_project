@@ -21,11 +21,6 @@ import model
 
 urllib3.disable_warnings(InsecureRequestWarning)
 
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 import yaml
 
 # 创建日志记录器
@@ -108,7 +103,9 @@ def threadInseart(k, session):
     session.add(k)
     session.commit()
 
-
+def threadInseartSql(sql :str, session):
+    session.execute(text(sql))
+    session.commit()
 
 class hbg:
     def __init__(self, rank_type: str = "综合排名"):
@@ -143,10 +140,14 @@ class hbg:
 
 
     def get_history_order_info(self, user_sign: str = None, nick_name: str = None, copy_user_num: str = None,
-                               page: int = 1, page_size: int = 40):
+                               page: int = 1, page_size: int = 40, retry: int = 0):
+        """
+        获取历史带单数据
+        返回三种状态，1(数据存入完成)，2(数据存入完成，并且数据库总量和平台总量相等)，3(数据存入完成，并且数据库总量和平台总量不相等)
+        """
 
-        history_data = []
         session = sessionmaker(bind=createSession(os.path.join(self.BASE_DIR, "sqlite\\huobi.db")))()
+        history_data = []
         url = 'https://futures.htx.com.de/-/x/hbg/v1/copytrading/trader/open-matched-orders'
         params = {
             "queryType": 2,
@@ -159,59 +160,113 @@ class hbg:
             "referer": "https://futures.htx.com.de/zh-cn/futures/copy_trading/following/trader/" + user_sign,
             # "sec-ch-ua:": '"Google Chrome";v="135", "Not-A.Brand";v="8", "Chromium";v="135"'
         }
-        check_num = 0
-        for i in range(1, 6):
-            try:
-                response = requests.session().get(url=url, params=params, headers=headers, verify=False)
-                if response.status_code == requests.codes.ok:
-                    result = response.json()
-                    if len(result['data']['orders']) > 0:
-                        for order in result['data']['orders']:
-                            temp = {
-                                "id": order['id'],
-                                "用户名": nick_name,
-                                "合约": order['symbol'],
-                                "方向": f"{direction.get(order['direction'])}",
-                                "杠杆": f"{order['lever']}",
-                                "开仓价格(USDT)": f"{order['openPrice']}",
-                                "平仓价格(USDT)": order['closePrice'],
-                                "收益率(%)": f"{round(float(order['profitRate']) * 100, 3)}%",
-                                "止盈价格(USDT)": order['profitPrice'],
-                                "平仓方式": close_type_map.get(order['closeType']) if close_type_map.get(
-                                    order['closeType']) is not None else order['closeType'],
-                                "开仓时间": datetime.datetime.utcfromtimestamp(order['openTime'] / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"),
-                                "平仓时间": datetime.datetime.utcfromtimestamp(order['closeTime'] / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"),
-                                "持仓时间": time_diff(datetime.datetime.utcfromtimestamp(order['closeTime'] / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"),datetime.datetime.utcfromtimestamp(order['openTime'] / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S")),
-                                "当前跟单人数": copy_user_num,
-                                "开仓数量": f"{order['openAmount']}ETH",
-                                "收益额(USDT)": f"{order['profit']}",
-                                "带单分成(USDT)": order['followTakes'],
-                                "跟单人数": order['followerCounts'],
-                                "开仓手续费(USDT)": order['openFee'],
-                                "平仓手续费(USDT)": order['closeFee'],
-                            }
-                            try:
-                                sql = f"INSERT INTO 'trading_records' ('id', 'username', 'contract', 'direction', 'leverage', 'open_price', 'close_price', 'yield_rate', 'take_profit_price', 'close_method', 'open_time', 'close_time', 'duration', 'current_followers', 'position_size', 'profit', 'commission_fee', 'total_followers', 'open_fee', 'close_fee') " \
-                                      f"VALUES ('{temp.get('id')}', '{temp.get('用户名')}', '{temp.get('合约')}', " \
-                                      f"'{temp.get('方向')}', '{temp.get('杠杆')}', '{temp.get('开仓价格(USDT)')}', " \
-                                      f"'{temp.get('平仓价格(USDT)')}', '{temp.get('收益率(%)')}', '{temp.get('止盈价格(USDT)')}', " \
-                                      f"'{temp.get('平仓方式')}', '{temp.get('开仓时间')}', '{temp.get('平仓时间')}', '{temp.get('持仓时间')}', '{temp.get('当前跟单人数')}', " \
-                                      f"'{temp.get('开仓数量')}', '{temp.get('收益额(USDT)')}', '{temp.get('带单分成(USDT)')}', '{temp.get('跟单人数')}', " \
-                                      f"'{temp.get('开仓手续费(USDT)')}', '{temp.get('平仓手续费(USDT)')}');"
-                                session.execute(text(sql))
-                            except Exception as e:
-                                check_num += 1
-
-                            history_data.append(temp)
-                    else:
-                        return False
-                    if check_num == len(result['data']['orders']):
-                        return False
-                    return True
-            except Exception as e:
-                logger.error(f"获取历史数据异常：{e}")
-
-        return history_data
+        if retry == 0:
+            for i in range(1, 6):
+                try:
+                    response = requests.session().get(url=url, params=params, headers=headers, verify=False)
+                    if response.status_code == requests.codes.ok:
+                        result = response.json()
+                        if len(result['data']['orders']) > 0:
+                            for order in result['data']['orders']:
+                                temp = {
+                                    "id": order['id'],
+                                    "用户名": nick_name,
+                                    "合约": order['symbol'],
+                                    "方向": f"{direction.get(order['direction'])}",
+                                    "杠杆": f"{order['lever']}",
+                                    "开仓价格(USDT)": f"{order['openPrice']}",
+                                    "平仓价格(USDT)": order['closePrice'],
+                                    "收益率(%)": f"{round(float(order['profitRate']) * 100, 3)}%",
+                                    "止盈价格(USDT)": order['profitPrice'],
+                                    "平仓方式": close_type_map.get(order['closeType']) if close_type_map.get(
+                                        order['closeType']) is not None else order['closeType'],
+                                    "开仓时间": datetime.datetime.utcfromtimestamp(order['openTime'] / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"),
+                                    "平仓时间": datetime.datetime.utcfromtimestamp(order['closeTime'] / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"),
+                                    "持仓时间": time_diff(datetime.datetime.utcfromtimestamp(order['closeTime'] / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"),datetime.datetime.utcfromtimestamp(order['openTime'] / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S")),
+                                    "当前跟单人数": copy_user_num,
+                                    "开仓数量": f"{order['openAmount']}ETH",
+                                    "收益额(USDT)": f"{order['profit']}",
+                                    "带单分成(USDT)": order['followTakes'],
+                                    "跟单人数": order['followerCounts'],
+                                    "开仓手续费(USDT)": order['openFee'],
+                                    "平仓手续费(USDT)": order['closeFee'],
+                                }
+                                try:
+                                    sql = f"INSERT INTO 'trading_records' ('id', 'username', 'contract', 'direction', 'leverage', 'open_price', 'close_price', 'yield_rate', 'take_profit_price', 'close_method', 'open_time', 'close_time', 'duration', 'current_followers', 'position_size', 'profit', 'commission_fee', 'total_followers', 'open_fee', 'close_fee') " \
+                                          f"VALUES ('{temp.get('id')}', '{temp.get('用户名')}', '{temp.get('合约')}', " \
+                                          f"'{temp.get('方向')}', '{temp.get('杠杆')}', '{temp.get('开仓价格(USDT)')}', " \
+                                          f"'{temp.get('平仓价格(USDT)')}', '{temp.get('收益率(%)')}', '{temp.get('止盈价格(USDT)')}', " \
+                                          f"'{temp.get('平仓方式')}', '{temp.get('开仓时间')}', '{temp.get('平仓时间')}', '{temp.get('持仓时间')}', '{temp.get('当前跟单人数')}', " \
+                                          f"'{temp.get('开仓数量')}', '{temp.get('收益额(USDT)')}', '{temp.get('带单分成(USDT)')}', '{temp.get('跟单人数')}', " \
+                                          f"'{temp.get('开仓手续费(USDT)')}', '{temp.get('平仓手续费(USDT)')}');"
+                                    session.execute(text(sql))
+                                    session.commit()
+                                except Exception as e:
+                                    total = session.execute(text(f"select count(*) from trading_records where username = '{nick_name}'")).fetchall()[0][0]
+                                    logger.error(f"数据已在数据库存在，{nick_name}用户数据库总数：{total}，火币网总数：{result['data']['totalSize']}")
+                                    if int(total) == int(result['data']['totalSize']):
+                                        return 2
+                                    elif int(total) * 0.8 > int(result['data']['totalSize']):
+                                        return 3
+                                # history_data.append(temp)
+                        else:
+                            return 2
+                        return 1
+                except Exception as e:
+                    logger.error(f"获取历史带单数据《网络》异常：{e}")
+                finally:
+                    session.close()
+            return 2
+        elif retry == 1:
+            for i in range(1, 4):
+                try:
+                    response = requests.session().get(url=url, params=params, headers=headers, verify=False)
+                    if response.status_code == requests.codes.ok:
+                        result = response.json()
+                        if len(result['data']['orders']) > 0:
+                            for order in result['data']['orders']:
+                                temp = {
+                                    "id": order['id'],
+                                    "用户名": nick_name,
+                                    "合约": order['symbol'],
+                                    "方向": f"{direction.get(order['direction'])}",
+                                    "杠杆": f"{order['lever']}",
+                                    "开仓价格(USDT)": f"{order['openPrice']}",
+                                    "平仓价格(USDT)": order['closePrice'],
+                                    "收益率(%)": f"{round(float(order['profitRate']) * 100, 3)}%",
+                                    "止盈价格(USDT)": order['profitPrice'],
+                                    "平仓方式": close_type_map.get(order['closeType']) if close_type_map.get(
+                                        order['closeType']) is not None else order['closeType'],
+                                    "开仓时间": datetime.datetime.utcfromtimestamp(order['openTime'] / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"),
+                                    "平仓时间": datetime.datetime.utcfromtimestamp(order['closeTime'] / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"),
+                                    "持仓时间": time_diff(datetime.datetime.utcfromtimestamp(order['closeTime'] / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"),datetime.datetime.utcfromtimestamp(order['openTime'] / 1000).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S")),
+                                    "当前跟单人数": copy_user_num,
+                                    "开仓数量": f"{order['openAmount']}ETH",
+                                    "收益额(USDT)": f"{order['profit']}",
+                                    "带单分成(USDT)": order['followTakes'],
+                                    "跟单人数": order['followerCounts'],
+                                    "开仓手续费(USDT)": order['openFee'],
+                                    "平仓手续费(USDT)": order['closeFee'],
+                                }
+                                try:
+                                    sql = f"INSERT INTO 'trading_records' ('id', 'username', 'contract', 'direction', 'leverage', 'open_price', 'close_price', 'yield_rate', 'take_profit_price', 'close_method', 'open_time', 'close_time', 'duration', 'current_followers', 'position_size', 'profit', 'commission_fee', 'total_followers', 'open_fee', 'close_fee') " \
+                                          f"VALUES ('{temp.get('id')}', '{temp.get('用户名')}', '{temp.get('合约')}', " \
+                                          f"'{temp.get('方向')}', '{temp.get('杠杆')}', '{temp.get('开仓价格(USDT)')}', " \
+                                          f"'{temp.get('平仓价格(USDT)')}', '{temp.get('收益率(%)')}', '{temp.get('止盈价格(USDT)')}', " \
+                                          f"'{temp.get('平仓方式')}', '{temp.get('开仓时间')}', '{temp.get('平仓时间')}', '{temp.get('持仓时间')}', '{temp.get('当前跟单人数')}', " \
+                                          f"'{temp.get('开仓数量')}', '{temp.get('收益额(USDT)')}', '{temp.get('带单分成(USDT)')}', '{temp.get('跟单人数')}', " \
+                                          f"'{temp.get('开仓手续费(USDT)')}', '{temp.get('平仓手续费(USDT)')}');"
+                                    session.execute(text(sql))
+                                    session.commit()
+                                except Exception as e:
+                                    logger.error(f"数据已在数据库存在，{nick_name}用户，火币网总数：{result['data']['totalSize']}，异常：{e}")
+                                history_data.append(temp)
+                            return history_data
+                except Exception as e:
+                    logger.error(f"请求异常：网络错误请检查网络环境：{e}")
+                finally:
+                    session.close()
+            return history_data
     def get_today_order_info(self, user_sign: str = None, nick_name: str = None, copy_user_num: str = None,
                              page: int = 1, page_size: int = 40):
 
@@ -256,36 +311,50 @@ class hbg:
                             "%Y-%m-%d %H:%M:%S"),
                     })
         return today_data
-
-    def startup(self, user_sign):
+    def threadHistoryOrderInfo(self, user_info):
+        """封装获取所有历史订单"""
         history_page = 1
-        today_page = 1
         history_data = []
-        today_data = []
         session = sessionmaker(bind=createSession(os.path.join(self.BASE_DIR, "sqlite\\huobi.db")))()
         while True:
-            temp = self.get_history_order_info(user_sign=user_sign['userSign'], nick_name=user_sign['nickName'], copy_user_num=user_sign['copyUserNum'], page=history_page, page_size=100)
-            if temp is False:
-                logger.info(f"{user_sign['nickName']}第{history_page}页历史带单数据已存入数据库")
-                history_data.extend(session.execute(text(f"select * from trading_records where user_sign = {user_sign}")).fetchall())
+            temp = self.get_history_order_info(user_sign=user_info['userSign'], nick_name=user_info['nickName'], copy_user_num=user_info['copyUserNum'], page=history_page, page_size=40)
+            if temp == 2:
+                logger.info(f"{user_info['nickName']}历史带单数据已全部存入数据库")
+                history_data.extend(session.execute(text(f"select * from trading_records where username = '{user_info.get('nickName')}'")).fetchall())
                 break
-            if temp is True:
-                logger.info(f"获取成功：{user_sign['nickName']}第{history_page}页的{len(temp)}条历史带单数据")
+            elif temp == 1:
+                logger.info(f"获取成功：{user_info['nickName']}第{history_page}页历史带单数据")
                 history_page += 1
                 time.sleep(1)
-            else:
-                logger.info(f"获取失败：{user_sign['nickName']}第{history_page}页《不存在》历史带单数据")
-                break
-        while True:
-            temp = self.get_today_order_info(user_sign=user_sign['userSign'], nick_name=user_sign['nickName'], copy_user_num=user_sign['copyUserNum'], page=today_page, page_size=100)
-            if len(temp) > 0:
-                logger.info(f"获取成功：{user_sign['nickName']}第{today_page}页的{len(temp)}条当前带单数据")
-                today_page += 1
-                today_data.extend(temp)
-                time.sleep(1)
-            else:
-                logger.info(f"获取失败：{user_sign['nickName']}第{today_page}页《不存在》当前带单数据")
-                break
+            elif temp == 3:
+                history_page = 2
+                while True:
+                    temp = self.get_history_order_info(user_sign=user_info['userSign'], nick_name=user_info['nickName'],copy_user_num=user_info['copyUserNum'], page=history_page,page_size=100, retry=1)
+                    if len(temp) == 0:
+                        logger.info(f"{user_info['nickName']}历史带单数据已全部存入数据库")
+                        history_data = session.execute(text(f"select * from trading_records where username = '{user_info.get('nickName')}'")).fetchall()
+                        break
+                    else:
+                        history_page += 1
+        return history_data
+
+    def startup(self, user_info):
+        today_page = 1
+        today_data = []
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            future = executor.submit(self.threadHistoryOrderInfo, user_info)
+            while True:
+                temp = self.get_today_order_info(user_sign=user_info['userSign'], nick_name=user_info['nickName'],
+                                                 copy_user_num=user_info['copyUserNum'], page=today_page, page_size=100)
+                if len(temp) > 0:
+                    logger.info(f"获取成功：{user_info['nickName']}第{today_page}页的{len(temp)}条当前带单数据")
+                    today_page += 1
+                    today_data.extend(temp)
+                    time.sleep(1)
+                else:
+                    logger.info(f"获取失败：{user_info['nickName']}第{today_page}页《不存在》当前带单数据")
+                    break
+            history_data = future.result()
         return {"历史带单": history_data, "当前带单": today_data}
 
     def k_link(self,
@@ -311,24 +380,15 @@ class hbg:
         if timeframe.__contains__("s"):
             tf = int(timeframe.replace("s", ""))
         elif timeframe.__contains__("m"):
-            tf = int(timeframe.replace("s", "")) * 60
+            tf = int(timeframe.replace("m", "")) * 60
         elif timeframe.__contains__("h"):
-            tf = int(timeframe.replace("s", "")) * 60 * 60
+            tf = int(timeframe.replace("h", "")) * 60 * 60
         elif timeframe.__contains__("d"):
             tf = int(timeframe.replace("d", "")) * 60 * 60 * 24
 
         sql = f"SELECT CASE WHEN total_records >= ((({end_time}/1000 - {since}/1000)/{tf})) THEN '记录数与时间跨度匹配' ELSE '记录数不匹配（应有 ' || ((({end_time}/1000 - {since}/1000)/{tf}) + 1) || ' 条，实际 ' || total_records || ' 条）' END AS check_result FROM (SELECT COUNT(*) AS total_records FROM k_link WHERE type='{timeframe}' and symbol = '{symbol}' and time BETWEEN {since} AND {end_time});"
         result = session.execute(text(sql)).fetchall()[0][0]
         logger.info(result)
-        # logger.info(result[0])
-        # result = "记录数与时间跨度匹配"
-        # exchange = ccxt.binance({
-        #     'proxies': {
-        #         'http': f'{proxie_type}://127.0.0.1:{proxies_http_port}',  # SOCKS5 代理
-        #         'https': f'{proxie_type}://127.0.0.1:{proxies_https_port}',
-        #     }
-        # })
-
         # 初始化交易所
         if result != "记录数与时间跨度匹配":
             logger.info(f"正在初始化交易所：{exchange_name}")
@@ -542,19 +602,7 @@ class hbg:
 
         pd1 = pandas.read_excel(historical_leads_file_path)
 
-        k_data_list = dict()
         export_data = list()
-        # keys = list()  # 时间类型
-        # 获取不同类型的最大时间和最小时间
-        # if start_time == "" or end_time == "" or end_time == None or start_time == None:
-        #     start_timestamp = int(datetime.datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
-        #     time1 = pd1.groupby("合约")['开仓时间'].apply(list).to_dict()
-        #     time2 = pd1.groupby("合约")['平仓时间'].apply(list).to_dict()
-        #     for key, value in time1.items():
-        #         time2.get(key).extend(value)
-        #         keys.append(str(key).replace("-", "/") + "_" +
-        #                     datetime.datetime.strptime(str(min(time2.get(key))),"%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S") + "_" +
-        #                     datetime.datetime.strptime(str(max(time2.get(key))),"%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S"))
         futures = []
         with ThreadPoolExecutor(max_workers=50) as executor:
             for i in pd1.index.values:

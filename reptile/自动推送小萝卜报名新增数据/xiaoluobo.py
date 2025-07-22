@@ -10,6 +10,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import QQEmail
+import dingding_utils
 from orm import XiaoluoboInfo
 
 pymysql.install_as_MySQLdb()
@@ -196,5 +197,6 @@ def sendEmail():
         if message != '':
             print('存在数据，开始发送邮件.......')
             qq_email_client.send(application.get('email').get('acceptEmail'), '小萝卜活动数据新增', message)
+            dingding_utils.给钉钉推送消息(application.get('dingding').get('url'), '小萝卜活动数据新增', message)
         else:
             print("不存在数据，不发送邮件.......")

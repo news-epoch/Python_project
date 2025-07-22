@@ -12,3 +12,5 @@ email:
   sendPass: "MFS33kEx8XwRSuvY"
   sendHost: "smtp.163.com"
   acceptEmail: "819730159@qq.com"
+dingding:
+  url: "https://oapi.dingtalk.com/robot/send?access_token=684d6cb7bc2cca28d8637656dbed6f0e67f4e3811b3a2b4dc5de3c2de0c1e37e"

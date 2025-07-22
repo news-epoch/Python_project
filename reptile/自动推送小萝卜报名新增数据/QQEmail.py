@@ -53,7 +53,7 @@ class MailClient(object):
         _msg = MIMEText(content, 'html', 'utf-8')
         _msg['Subject'] = Header(subject, 'utf-8')
         _msg['From'] = self.mail_user
-        _msg['To'] = '; '.join(to_email)
+        _msg['To'] = '; '+ to_email
         _msg['Date'] = datetime.now().strftime('%Y-%d-%m %H:%M:%S')
         try:
             _smtp_server.sendmail(self.mail_user, to_email, _msg.as_string())

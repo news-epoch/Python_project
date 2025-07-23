@@ -5,6 +5,8 @@ WORKDIR /app
 # 将项目的依赖文件和文件复制到工作目录
 COPY . /app
 # 安装依赖
+ENV TZ=Asia/Shanghai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN pip config set global.progress_bar off   # 防止线程不够用的情况
 RUN pip install --upgrade pip setuptools -i https://pypi.tuna.tsinghua.edu.cn/simple
 RUN pip install -r  /app/requirements.txt

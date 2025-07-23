@@ -16,30 +16,30 @@ from orm import XiaoluoboInfo
 pymysql.install_as_MySQLdb()
 
 
-def 创建日志(fileName):
+# def 创建日志(fileName):
     # logging.basicConfig(level=logging.INFO,
     #                              format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     #                              datefmt='%Y-%m-%d %H:%M:%S',
     #                              filename= fileName,  # 日志文件
     #                              filemode='a')  # 追加模式
-    logger = logging.getLogger('spider')
+logger = logging.getLogger('spider')
 
-    logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.DEBUG)
 
-    # 输出到文件
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    file_handler = logging.FileHandler(fileName, encoding='utf-8')
-    file_handler.setFormatter(formatter)
+# 输出到文件
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+file_handler = logging.FileHandler('app.log', encoding='utf-8')
+file_handler.setFormatter(formatter)
 
-    # 输出到控制台
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.DEBUG)
+# 输出到控制台
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.DEBUG)
 
-    # 添加处理器到日志器
-    logger.addHandler(file_handler)
-    logger.addHandler(console_handler)
+# 添加处理器到日志器
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
 
-    return logger
+    # return logger
 
 def applicationYml():
     with open('./conf/application.yaml', 'r', encoding='utf-8') as f:
@@ -169,6 +169,7 @@ def save(url, headers):
 
 
 def sendEmail():
+    logger.info(f"=================当前运行开始时间{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}=====================")
     application = applicationYml()
     new_activity_list = None
     qq_email_client = None
@@ -178,13 +179,13 @@ def sendEmail():
             qq_email_client = QQEmail.MailClient(host=application.get('email').get('sendHost'), user=application.get('email').get('sendEmail'), pwd=application.get('email').get('sendPass'))
             break
         except Exception as e:
-            print(e)
+            logger.info(f"获取数据异常：{e}")
     # print(new_activity_list)
     if len(new_activity_list) != 0:
         message = ''
-        print("构建准备数据----------->")
+        logger.info("构建准备数据----------->")
         for activity in new_activity_list:
-            print(activity)
+            logger.info(activity)
             prices = ''
             if len(json.loads(activity.get('priceItems'))) != 0:
                 for i in json.loads(activity.get('priceItems')):
@@ -193,10 +194,15 @@ def sendEmail():
                     prices += price
             msg = f"标题：{activity.get('title')}<br>地址：{activity.get('locationName')}<br>当前报名数：{activity.get('attendCount')}/{activity.get('count')}<br>创建时间：{activity.get('createdAt')}<br>结束时间：{activity.get('endAt')}<br>发起人：{activity.get('targetOrgName')}<br>详细地址：{activity.get('locationAddress')}<br>价格表：<br>{prices}<br><br>-------------<br><br>"
             message += msg
-        print(message)
+        logger.info(message)
         if message != '':
-            print('存在数据，开始发送邮件.......')
-            qq_email_client.send(application.get('email').get('acceptEmail'), '小萝卜活动数据新增', message)
-            dingding_utils.给钉钉推送消息(application.get('dingding').get('url'), '小萝卜活动数据新增', message)
+            logger.info('存在数据，开始发送邮件.......')
+            try:
+                qq_email_client.send(application.get('email').get('acceptEmail'), '小萝卜活动数据新增', message)
+
+                dingding_utils.给钉钉推送消息(application.get('dingding').get('url'), '小萝卜活动数据新增', message)
+            except Exception as e:
+                logger.info(f"消息发送异常：{e}")
         else:
-            print("不存在数据，不发送邮件.......")
+            logger.info("不存在数据，不发送邮件.......")
+    logger.info(f"=================当前运行结束时间{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}=====================\n\n")

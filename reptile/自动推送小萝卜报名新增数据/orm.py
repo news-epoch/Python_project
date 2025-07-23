@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Text, Date, DateTime
+from sqlalchemy import Column, Text, Integer, Text, Date, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -6,16 +6,16 @@ Base = declarative_base()
 
 class XiaoluoboInfo(Base):
     __tablename__ = "xiaoluoboInfo"
-    id = Column(String(254), primary_key=True)
-    title = Column(String(254))
-    locationName = Column(String(254))
+    id = Column(Text, primary_key=True)
+    title = Column(Text)
+    locationName = Column(Text)
     attendCount = Column(Integer)
     count = Column(Integer)
-    createdAt = Column(DateTime)
-    endAt = Column(DateTime)
-    locationAddress = Column(String(254))
-    priceItems = Column(String(254))   # 报名金额
-    targetOrgName = Column(String(254))
+    createdAt = Column(Text)
+    endAt = Column(Text)
+    locationAddress = Column(Text)
+    priceItems = Column(Text)   # 报名金额
+    targetOrgName = Column(Text)
 
 
     def __init__(self, id, title, locationName, attendCount, count, createdAt, endAt, locationAddress, priceItems, targetOrgName):

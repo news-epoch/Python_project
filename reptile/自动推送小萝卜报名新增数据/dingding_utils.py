@@ -2,7 +2,10 @@ import json
 import time
 
 import requests
+from urllib3.exceptions import InsecureRequestWarning
 
+# 关闭ssl告警
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 def 给钉钉推送消息(url, title, message):
     header = {
@@ -38,4 +41,4 @@ def 给钉钉推送消息(url, title, message):
 if __name__ == '__main__':
     url = 'https://oapi.dingtalk.com/robot/send?access_token=684d6cb7bc2cca28d8637656dbed6f0e67f4e3811b3a2b4dc5de3c2de0c1e37e'
 
-    给钉钉推送消息(url, '闲鱼发货', '发货')
+    给钉钉推送消息(url, '小萝卜活动数据新增', '发货')

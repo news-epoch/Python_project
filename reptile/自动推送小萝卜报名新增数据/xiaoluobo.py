@@ -12,7 +12,7 @@ from sqlalchemy.orm import sessionmaker
 import QQEmail
 import dingding_utils
 from orm import XiaoluoboInfo
-
+import traceback
 pymysql.install_as_MySQLdb()
 
 
@@ -113,28 +113,30 @@ def getXiaoLuoBoData(xLCSign, xLCSession, xLCId):
             print(e)
             time.sleep(10)
     data = []
-    for result in response.json()['results']:
-        # print(json.dumps(result, ensure_ascii=False))
-        try:
-            data.append({
-                'id': result['objectId'],  # 唯一id
-                "title": result['title'],  # 标题
-                # "description": result['description'],     # 描述
-                "locationAddress": result.get('locationAddress'),  # 实际地址
-                "locationName": result['locationName'],  # 地址名
-                "count": int(result['count']),  # 可报名最大数
-                "attendCount": int(result['attendCount']),  # 当前报名数
-                # "createdAt": result['createdAt'],
-                # "endAt": result['expiredAt']['iso']
-                "createdAt": datetime.datetime.strptime(str(result['createdAt']), '%Y-%m-%dT%H:%M:%S.%fZ').strftime(
-                    "%Y-%m-%d %H:%M:%S"),  # 任务创建时间
-                "endAt": datetime.datetime.strptime(result['expiredAt']['iso'], '%Y-%m-%dT%H:%M:%S.%fZ').strftime(
-                    "%Y-%m-%d %H:%M:%S"),  # 任务结束时间
-                'priceItems': json.dumps(result.get('additionalItems'), ensure_ascii=False),   # 价格
-                'targetOrgName': result.get('targetOrg').get('name')
-            })
-        except Exception:
-            print(json.dumps(result, ensure_ascii=False))
+    if response.status_code == requests.codes.ok and response.json() != '' and isinstance(response.json(), dict):
+        print("数据正常")
+        for result in response.json()['results']:
+            try:
+                data.append({
+                    'id': result['objectId'],  # 唯一id
+                    "title": result['title'],  # 标题
+                    # "description": result['description'],     # 描述
+                    "locationAddress": result.get('locationAddress'),  # 实际地址
+                    "locationName": result['locationName'],  # 地址名
+                    "count": int(result['count']),  # 可报名最大数
+                    "attendCount": int(result['attendCount']),  # 当前报名数
+                    # "createdAt": result['createdAt'],
+                    # "endAt": result['expiredAt']['iso']
+                    "createdAt": datetime.datetime.strptime(str(result['createdAt']), '%Y-%m-%dT%H:%M:%S.%fZ').strftime("%Y-%m-%d %H:%M:%S"),  # 任务创建时间
+                    "endAt": datetime.datetime.strptime(result['expiredAt']['iso'], '%Y-%m-%dT%H:%M:%S.%fZ').strftime("%Y-%m-%d %H:%M:%S"),  # 任务结束时间
+                    'priceItems': json.dumps(result.get('additionalItems'), ensure_ascii=False),   # 价格
+                    'targetOrgName': result.get('user').get('nickName') if result.get('targetOrg') == None else result.get('targetOrg').get('name')
+                })
+            except Exception as e:
+                logging.error(f"解析json格式出现异常：{e}")
+
+                logging.error(f"异常所在行数{traceback.format_exc()}")
+                logging.error(json.dumps(result, ensure_ascii=False))
     return data
 
 
@@ -180,6 +182,7 @@ def sendEmail():
             break
         except Exception as e:
             logger.info(f"获取数据异常：{e}")
+            logging.info(f"异常所在行数：{traceback.format_exc()}")
     # print(new_activity_list)
     if len(new_activity_list) != 0:
         message = ''
@@ -192,17 +195,24 @@ def sendEmail():
                     # print(i)
                     price = f'&nbsp;&nbsp;&nbsp;&nbsp;选项名：{str(i.get("name"))}<br>&nbsp;&nbsp;&nbsp;&nbsp;价格：{str(i.get("price"))}<br>&nbsp;&nbsp;&nbsp;&nbsp;--<br>'
                     prices += price
-            msg = f"标题：{activity.get('title')}<br>地址：{activity.get('locationName')}<br>当前报名数：{activity.get('attendCount')}/{activity.get('count')}<br>创建时间：{activity.get('createdAt')}<br>结束时间：{activity.get('endAt')}<br>发起人：{activity.get('targetOrgName')}<br>详细地址：{activity.get('locationAddress')}<br>价格表：<br>{prices}<br><br>-------------<br><br>"
+            msg = f"id：{activity.get('id')}<br>标题：{activity.get('title')}<br>地址：{activity.get('locationName')}<br>当前报名数：{activity.get('attendCount')}/{activity.get('count')}<br>创建时间：{activity.get('createdAt')}<br>结束时间：{activity.get('endAt')}<br>发起人：{activity.get('targetOrgName')}<br>详细地址：{activity.get('locationAddress')}<br>价格表：<br>{prices}<br><br>-------------<br><br>"
             message += msg
         logger.info(message)
         if message != '':
             logger.info('存在数据，开始发送邮件.......')
             try:
                 qq_email_client.send(application.get('email').get('acceptEmail'), '小萝卜活动数据新增', message)
-
-                dingding_utils.给钉钉推送消息(application.get('dingding').get('url'), '小萝卜活动数据新增', message)
+                for m in message.split('-------------'):
+                    dingding_utils.给钉钉推送消息(application.get('dingding').get('url'), '小萝卜活动数据新增', m)
             except Exception as e:
                 logger.info(f"消息发送异常：{e}")
         else:
             logger.info("不存在数据，不发送邮件.......")
     logger.info(f"=================当前运行结束时间{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}=====================\n\n")
+
+
+if __name__ == '__main__':
+    # 测试消息请求
+    application = applicationYml()
+    headers = application.get('headers')
+    getXiaoLuoBoData(headers.get('X-LC-Sign'), headers.get('X-LC-Session'), headers.get('X-LC-Id'))

@@ -197,16 +197,13 @@ def sendEmail():
                     prices += price
             msg = f"id：{activity.get('id')}<br>标题：{activity.get('title')}<br>地址：{activity.get('locationName')}<br>当前报名数：{activity.get('attendCount')}/{activity.get('count')}<br>创建时间：{activity.get('createdAt')}<br>结束时间：{activity.get('endAt')}<br>发起人：{activity.get('targetOrgName')}<br>详细地址：{activity.get('locationAddress')}<br>价格表：<br>{prices}<br><br>-------------<br><br>"
             dingding_utils.给钉钉推送消息(application.get('dingding').get('url'), '小萝卜活动数据新增', msg)
+            if msg.__contains__('免费') or msg.__contains__('放鸽费'):
+                try:
+                    qq_email_client.send(application.get('email').get('acceptEmail'), '小萝卜活动数据新增', msg)
+                except Exception as e:
+                    logger.info(f"消息发送异常：{e}")
             message += msg
         logger.info(message)
-        if message != '':
-            logger.info('存在数据，开始发送邮件.......')
-            try:
-                qq_email_client.send(application.get('email').get('acceptEmail'), '小萝卜活动数据新增', message)
-            except Exception as e:
-                logger.info(f"消息发送异常：{e}")
-        else:
-            logger.info("不存在数据，不发送邮件.......")
     logger.info(f"=================当前运行结束时间{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}=====================\n\n")
 
 
@@ -214,4 +211,4 @@ if __name__ == '__main__':
     # 测试消息请求
     application = applicationYml()
     headers = application.get('headers')
-    getXiaoLuoBoData(headers.get('X-LC-Sign'), headers.get('X-LC-Session'), headers.get('X-LC-Id'))
+    print(len(getXiaoLuoBoData(headers.get('X-LC-Sign'), headers.get('X-LC-Session'), headers.get('X-LC-Id'))))

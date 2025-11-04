@@ -142,7 +142,7 @@ def getXiaoLuoBoData(xLCSign, xLCSession, xLCId):
 
 def save(url, headers):
     engine = create_engine(url=url,
-                           echo=True,
+                           echo=False,
                            pool_size=8,
                            )
     DbSession = sessionmaker(bind=engine)
@@ -163,6 +163,7 @@ def save(url, headers):
         if session.query(XiaoluoboInfo).filter(XiaoluoboInfo.id == xiaoluoboInfo.id).count() != 0:
             continue
         else:
+            logger.info(f"添加数据：{json.dumps(xiaoluoboInfo.to_dict())}")
             saveData.append(xiaoluoboInfo.to_dict())
             session.add(xiaoluoboInfo)
             session.commit()
